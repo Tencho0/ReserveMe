@@ -12,13 +12,16 @@
 	public class AuthController : ApiControllerBase
 	{
 		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly IConfiguration _configuration;
 
 		public AuthController(
 			UserManager<ApplicationUser> userManager,
+			RoleManager<IdentityRole> roleManager,
 			IConfiguration configuration)
 		{
 			_userManager = userManager;
+			_roleManager = roleManager;
 			_configuration = configuration;
 		}
 
@@ -42,17 +45,26 @@
 		{
 			var existing = await _userManager.FindByEmailAsync(request.Email);
 			if (existing != null)
-			{
 				return BadRequest("Email is already registered.");
-			}
+
+			string roleToAssign = request.Role;
+			if (string.IsNullOrWhiteSpace(roleToAssign))
+				roleToAssign = UserRoles.CLIENT_ROLE;
+
+			var roleExists = await _roleManager.RoleExistsAsync(roleToAssign);
+			if (!roleExists)
+				return BadRequest($"Role '{roleToAssign}' does not exist.");
+
+			// Prevent self-registering as Admin
+			if (roleToAssign.Equals(UserRoles.ADMINISTRATOR_ROLE, StringComparison.OrdinalIgnoreCase))
+				return Unauthorized("You cannot register as an administrator.");
 
 			var user = new ApplicationUser
 			{
 				FirstName = request.FirstName,
 				LastName = request.LastName,
 				UserName = request.Email,
-				Email = request.Email,
-				EmailConfirmed = true //TODO: Add email provider
+				Email = request.Email
 			};
 
 			var createResult = await _userManager.CreateAsync(user, request.Password);
@@ -62,8 +74,7 @@
 				return BadRequest(new { Errors = errors });
 			}
 
-			// Assign default role client
-			await _userManager.AddToRoleAsync(user, UserRoles.CLIENT_ROLE);
+			await _userManager.AddToRoleAsync(user, roleToAssign);
 
 			var token = await GenerateJwtTokenAsync(user);
 			return Ok(token);
