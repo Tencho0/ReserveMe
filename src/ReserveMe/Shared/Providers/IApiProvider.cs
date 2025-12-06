@@ -1,0 +1,56 @@
+﻿namespace Shared.Providers
+{
+
+	/// <summary>
+	/// Core Api Requests Provider Interface 
+	/// </summary>
+	public interface IApiProvider
+	{
+		/// <summary>
+		/// Perform asynchronous Get request
+		/// </summary>
+		/// <typeparam name="TResult">Result Model Type</typeparam>
+		/// <param name="uri">>Universal Resource Identifier</param>
+		/// <param name="uriParams">URI Parameters</param>
+		/// <param name="queryParams">Query String Parameters</param>
+		/// <param name="token">Access Bearer Token</param>
+		/// <returns></returns>
+		Task<TResult> GetAsync<TResult>(string uri, object[] uriParams, Dictionary<string, object> queryParams, string token = "");
+
+		/// <summary>
+		/// Perform asyncrhonous Post request
+		/// </summary>
+		/// <typeparam name="TRequest">Request Model Type</typeparam>
+		/// <typeparam name="TResult">Result Model Type</typeparam>
+		/// <param name="uri">Universal Resource Identifier</param>
+		/// <param name="data">Request Data</param>
+		/// <param name="token">Access Bearer Token</param>
+		/// <param name="header">Additional Header Parameter With Unique GUID</param>
+		/// <returns>Result Data</returns>
+		Task<TResult> PostAsync<TRequest, TResult>(string uri, TRequest data, string token = "", string header = "");
+
+		/// <summary>
+		/// Perform asynchronous Put Request
+		/// </summary>
+		/// <typeparam name="TRequest">Request Model Type</typeparam>
+		/// <typeparam name="TResult">Result Model Type</typeparam>
+		/// <param name="uri">Endpoint Uri</param>
+		/// <param name="data">Data to persist</param>
+		/// <param name="token">Access Bearer Token</param>
+		/// <param name="header">Additional Header Parameter With Unique GUID</param>
+		/// <returns>Result Data</returns>
+		Task<TResult> PutAsync<TRequest, TResult>(string uri, TRequest data, string token = "", string header = "");
+
+		/// <summary>
+		/// Perform asynchronous Delete Request
+		/// </summary>
+		/// <typeparam name="TRequest">Request Model Type</typeparam>
+		/// <typeparam name="TResult">Result Model Type</typeparam>
+		/// <param name="uri">Endpoint Uri</param>
+		/// <param name="data">Data to persist</param>
+		/// <param name="token">Access Bearer Token</param>
+		/// <param name="header">Additional Header Parameter With Unique GUID</param>
+		/// <returns>Result Data</returns>
+		Task<TResult> DeleteAsync<TRequest, TResult>(string uri, TRequest data, string token = "", string header = "");
+	}
+}
