@@ -8,6 +8,8 @@
 	using Microsoft.AspNetCore.Identity;
 	using Microsoft.AspNetCore.Mvc;
 	using Microsoft.IdentityModel.Tokens;
+	using Shared.Authorization;
+	using Shared.Requests;
 
 	public class AuthController : ApiControllerBase
 	{
@@ -26,7 +28,7 @@
 		}
 
 		[HttpPost("login")]
-		public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
+		public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginUserRequest request)
 		{
 			var user = await _userManager.FindByEmailAsync(request.Email);
 			if (user == null)
@@ -41,23 +43,11 @@
 		}
 
 		[HttpPost("register")]
-		public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
+		public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterUserRequest request)
 		{
 			var existing = await _userManager.FindByEmailAsync(request.Email);
 			if (existing != null)
 				return BadRequest("Email is already registered.");
-
-			string roleToAssign = request.Role;
-			if (string.IsNullOrWhiteSpace(roleToAssign))
-				roleToAssign = UserRoles.CLIENT_ROLE;
-
-			var roleExists = await _roleManager.RoleExistsAsync(roleToAssign);
-			if (!roleExists)
-				return BadRequest($"Role '{roleToAssign}' does not exist.");
-
-			// Prevent self-registering as Admin
-			if (roleToAssign.Equals(UserRoles.ADMINISTRATOR_ROLE, StringComparison.OrdinalIgnoreCase))
-				return Unauthorized("You cannot register as an administrator.");
 
 			var user = new ApplicationUser
 			{
@@ -74,7 +64,7 @@
 				return BadRequest(new { Errors = errors });
 			}
 
-			await _userManager.AddToRoleAsync(user, roleToAssign);
+			await _userManager.AddToRoleAsync(user, UserRoles.CLIENT_ROLE);
 
 			var token = await GenerateJwtTokenAsync(user);
 			return Ok(token);

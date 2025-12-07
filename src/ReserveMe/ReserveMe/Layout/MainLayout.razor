@@ -6,7 +6,18 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <span class="ms-auto">
+                <AuthorizeView>
+                    <Authorized>
+                        <button class="btn btn-link" @onclick="Logout">
+                            Logout
+                        </button>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="/login">Login</a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </span>
         </div>
 
         <article class="content px-4">
@@ -14,3 +25,20 @@
         </article>
     </main>
 </div>
+
+@code
+{
+    @using Shared.Helpers
+ 
+    [Inject]
+    private IAuthenticationHelper? _authHelper { get; set; }
+
+    [Inject]
+    private NavigationManager? navManager { get; set; }
+
+    private async Task Logout()
+    {
+        await _authHelper.LogoutAsync();
+        navManager.NavigateTo("/login", forceLoad: true);
+    }
+}

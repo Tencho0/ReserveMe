@@ -40,6 +40,14 @@ builder.Services.AddAuthentication(options =>
 	};
 });
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("CorsPolicy", builder =>
+	builder.AllowAnyOrigin()
+	.AllowAnyMethod()
+	.AllowAnyHeader());
+});
+
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
@@ -114,6 +122,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -122,25 +131,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-//TODO: Move requests into other layer
-public class LoginRequest
-{
-	public string Email { get; set; } = default!;
-	public string Password { get; set; } = default!;
-}
-
-public class AuthResponse
-{
-	public string Token { get; set; } = default!;
-	public DateTime ExpiresAt { get; set; }
-}
-public class RegisterRequest
-{
-	public string FirstName { get; set; } = default!;
-	public string LastName { get; set; } = default!;
-	public string Email { get; set; } = default!;
-	public string Password { get; set; } = default!;
-	public string Role { get; set; } = default!;
-}
