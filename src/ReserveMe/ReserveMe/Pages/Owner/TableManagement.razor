@@ -1,0 +1,407 @@
+@page "/owner/tables"
+@namespace ReserveMe.Pages.Owner
+
+<PageTitle>Управление на маси - ReserveMe</PageTitle>
+
+<div class="container-fluid py-4">
+
+    @* Header *@
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">Управление на маси</h4>
+            <p class="text-muted mb-0">Преглед и управление на масите в ресторанта</p>
+        </div>
+        <button class="btn btn-primary" @onclick="OpenAddTableDialog">
+            <i class="bi bi-plus-lg me-1"></i> Добави маса
+        </button>
+    </div>
+
+    @* Statistics *@
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #424242, #616161);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count</h3>
+                    <small class="opacity-75">Общо маси</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #388E3C, #4CAF50);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count(t => t.Status == TableStatus.Available && t.IsActive)</h3>
+                    <small class="opacity-75">Свободни</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #D32F2F, #F44336);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count(t => t.Status == TableStatus.Occupied)</h3>
+                    <small class="opacity-75">Заети</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #F57C00, #FF9800);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count(t => t.Status == TableStatus.Reserved)</h3>
+                    <small class="opacity-75">Резервирани</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn @(_statusFilter == null ? "btn-primary" : "btn-outline-secondary")"
+                        @onclick="() => _statusFilter = null">
+                    Всички
+                </button>
+                <button class="btn @(_statusFilter == TableStatus.Available ? "btn-success" : "btn-outline-success")"
+                        @onclick="() => _statusFilter = TableStatus.Available">
+                    <i class="bi bi-check-circle me-1"></i> Свободни
+                </button>
+                <button class="btn @(_statusFilter == TableStatus.Occupied ? "btn-danger" : "btn-outline-danger")"
+                        @onclick="() => _statusFilter = TableStatus.Occupied">
+                    <i class="bi bi-people me-1"></i> Заети
+                </button>
+                <button class="btn @(_statusFilter == TableStatus.Reserved ? "btn-warning" : "btn-outline-warning")"
+                        @onclick="() => _statusFilter = TableStatus.Reserved">
+                    <i class="bi bi-calendar-event me-1"></i> Резервирани
+                </button>
+
+                <div class="vr mx-2"></div>
+
+                <button class="btn @(_activeFilter == true ? "btn-success" : "btn-outline-secondary")"
+                        @onclick="() => _activeFilter = _activeFilter == true ? null : true">
+                    <i class="bi bi-eye me-1"></i> Само активни
+                </button>
+                <button class="btn @(_activeFilter == false ? "btn-secondary" : "btn-outline-secondary")"
+                        @onclick="() => _activeFilter = _activeFilter == false ? null : false">
+                    <i class="bi bi-eye-slash me-1"></i> Само деактивирани
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @* Tables Grid *@
+    <div class="row g-3">
+        @foreach (var table in FilteredTables)
+        {
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                <div class="card table-card @GetTableCardClass(table)" 
+                     @onclick="() => SelectTable(table)"
+                     style="cursor: pointer;">
+                    <div class="card-body text-center p-3">
+                        <i class="bi bi-table fs-1" style="color: @GetStatusColor(table.Status);"></i>
+                        <h6 class="mt-2 mb-1">Маса №@table.TableNumber</h6>
+                        <span class="badge @GetStatusBadgeClass(table.Status)">
+                            @GetStatusText(table.Status)
+                        </span>
+                        <div class="mt-2 text-muted small">
+                            <i class="bi bi-people"></i>
+                            @if (table.Status == TableStatus.Reserved && table.GuestCount.HasValue)
+                            {
+                                @table.GuestCount.Value
+                            }
+                            else
+                            {
+                                @table.Capacity
+                            }
+                            места
+                        </div>
+                        @if (!table.IsActive)
+                        {
+                            <span class="badge bg-secondary mt-1">Деактивирана</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!FilteredTables.Any())
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-table fs-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">Няма намерени маси</h5>
+                        <button class="btn btn-primary mt-3" @onclick="OpenAddTableDialog">
+                            <i class="bi bi-plus-lg me-1"></i> Добави първата маса
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@* Details Drawer (Offcanvas) *@
+@if (_detailsDrawerOpen && _selectedTable != null)
+{
+    <div class="offcanvas-backdrop fade show" @onclick="() => _detailsDrawerOpen = false"></div>
+    <div class="offcanvas offcanvas-end show" tabindex="-1" style="visibility: visible;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Маса №@_selectedTable.TableNumber</h5>
+            <button type="button" class="btn-close" @onclick="() => _detailsDrawerOpen = false"></button>
+        </div>
+        <div class="offcanvas-body">
+            @* Table Details *@
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="bi bi-hash me-2"></i>Номер</span>
+                    <strong>@_selectedTable.TableNumber</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-circle-fill me-2" style="color: @GetStatusColor(_selectedTable.Status);"></i>Статус</span>
+                    <span class="badge @GetStatusBadgeClass(_selectedTable.Status)">@GetStatusText(_selectedTable.Status)</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="bi bi-people me-2"></i>Капацитет</span>
+                    <strong>@_selectedTable.Capacity места</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-check-circle me-2"></i>Активна</span>
+                    <span class="badge @(_selectedTable.IsActive ? "bg-success" : "bg-secondary")">
+                        @(_selectedTable.IsActive ? "Да" : "Не")
+                    </span>
+                </li>
+            </ul>
+
+            @* Reservation Details *@
+            @if (_selectedTable.Status == TableStatus.Reserved && _selectedTable.ActiveReservationId.HasValue)
+            {
+                <h6 class="fw-bold mb-3">Детайли на резервацията</h6>
+                <ul class="list-group list-group-flush mb-4">
+                    @if (!string.IsNullOrEmpty(_selectedTable.CustomerName))
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-person me-2"></i>Клиент</span>
+                            <strong>@_selectedTable.CustomerName</strong>
+                        </li>
+                    }
+                    @if (!string.IsNullOrEmpty(_selectedTable.CustomerPhone))
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-telephone me-2"></i>Телефон</span>
+                            <strong>@_selectedTable.CustomerPhone</strong>
+                        </li>
+                    }
+                    @if (_selectedTable.ReservationDate.HasValue)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-calendar me-2"></i>Дата</span>
+                            <strong>@_selectedTable.ReservationDate.Value.ToString("dd.MM.yyyy")</strong>
+                        </li>
+                    }
+                    @if (_selectedTable.ReservationTime.HasValue)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-clock me-2"></i>Час</span>
+                            <strong>@_selectedTable.ReservationTime.Value.ToString(@"hh\:mm")</strong>
+                        </li>
+                    }
+                    @if (_selectedTable.GuestCount.HasValue)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-people me-2"></i>Брой гости</span>
+                            <strong>@_selectedTable.GuestCount.Value</strong>
+                        </li>
+                    }
+                </ul>
+            }
+
+            @* Actions *@
+            <h6 class="fw-bold mb-3">Бързи действия</h6>
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" @onclick="OpenEditTableDialog">
+                    <i class="bi bi-pencil me-1"></i> Редактирай
+                </button>
+
+                @if (_selectedTable.Status == TableStatus.Available)
+                {
+                    <button class="btn btn-outline-warning" @onclick="OpenReserveTableDialog">
+                        <i class="bi bi-calendar-plus me-1"></i> Резервирай маса
+                    </button>
+                    <button class="btn btn-outline-danger" @onclick="() => ChangeTableStatus(_selectedTable, TableStatus.Occupied)">
+                        <i class="bi bi-person-fill me-1"></i> Маркирай като заета
+                    </button>
+                }
+
+                @if (_selectedTable.Status == TableStatus.Occupied)
+                {
+                    <button class="btn btn-outline-success" @onclick="() => ChangeTableStatus(_selectedTable, TableStatus.Available)">
+                        <i class="bi bi-check-circle me-1"></i> Освободи масата
+                    </button>
+                }
+
+                @if (_selectedTable.Status == TableStatus.Reserved)
+                {
+                    <button class="btn btn-outline-danger" @onclick="() => CancelReservation(_selectedTable)">
+                        <i class="bi bi-x-circle me-1"></i> Отмени резервация
+                    </button>
+                }
+
+                <button class="btn @(_selectedTable.IsActive ? "btn-outline-secondary" : "btn-outline-success")" 
+                        @onclick="ToggleTableActive">
+                    <i class="bi @(_selectedTable.IsActive ? "bi-eye-slash" : "bi-eye") me-1"></i>
+                    @(_selectedTable.IsActive ? "Деактивирай" : "Активирай")
+                </button>
+
+                @if (_selectedTable.Status == TableStatus.Available)
+                {
+                    <hr />
+                    <button class="btn btn-outline-danger" @onclick="OpenDeleteConfirmation">
+                        <i class="bi bi-trash me-1"></i> Изтрий маса
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@* Add/Edit Table Modal *@
+@if (_tableDialogOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi @(_isEditMode ? "bi-pencil" : "bi-plus-lg") me-2"></i>
+                        @(_isEditMode ? "Редактирай маса" : "Добави нова маса")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _tableDialogOpen = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Номер на маса</label>
+                        <input type="number" class="form-control" @bind="_editingTable.TableNumber" min="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Капацитет (брой места)</label>
+                        <input type="number" class="form-control" @bind="_editingTable.Capacity" min="1" max="20" />
+                    </div>
+                    @if (_isEditMode)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Статус</label>
+                            <select class="form-select" @bind="_editingTable.Status">
+                                <option value="@TableStatus.Available">Свободна</option>
+                                <option value="@TableStatus.Occupied">Заета</option>
+                                <option value="@TableStatus.Reserved">Резервирана</option>
+                            </select>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" @bind="_editingTable.IsActive" id="isActiveSwitch" />
+                            <label class="form-check-label" for="isActiveSwitch">Активна маса</label>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _tableDialogOpen = false">Отказ</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveTable">
+                        @(_isEditMode ? "Запази" : "Добави")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Reserve Table Modal *@
+@if (_reserveDialogOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Резервирай маса №@_selectedTable?.TableNumber
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _reserveDialogOpen = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Име на клиент <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" @bind="_reservationCustomerName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Телефон</label>
+                        <input type="tel" class="form-control" @bind="_reservationPhoneNumber" placeholder="+359 888 123 456" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Дата на резервация</label>
+                        <input type="date" class="form-control" @bind="_reservationDate" @bind:format="yyyy-MM-dd" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Час на резервация</label>
+                        <input type="time" class="form-control" value="@_reservationTimeString" @onchange="OnTimeChanged" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Брой гости</label>
+                        <input type="number" class="form-control" @bind="_reservationGuestCount" min="1" max="20" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _reserveDialogOpen = false">Отказ</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmReservation">Резервирай</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Delete Confirmation Modal *@
+@if (_deleteDialogOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                        Потвърждение
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _deleteDialogOpen = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Сигурни ли сте, че искате да изтриете Маса №@_selectedTable?.TableNumber?</p>
+                    <p class="text-muted small">Това действие е необратимо.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _deleteDialogOpen = false">Отказ</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteTable">Изтрий</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .table-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .table-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+    }
+
+    .table-card-selected {
+        border: 2px solid #0d6efd !important;
+        transform: scale(1.02);
+    }
+
+    .table-card-inactive {
+        opacity: 0.6;
+    }
+
+    .offcanvas {
+        width: 400px !important;
+    }
+</style>
