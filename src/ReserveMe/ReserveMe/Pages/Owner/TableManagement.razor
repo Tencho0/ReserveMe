@@ -97,7 +97,7 @@
                      style="cursor: pointer;">
                     <div class="card-body text-center p-3">
                         <i class="bi bi-table fs-1" style="color: @GetStatusColor(table.Status);"></i>
-                        <h6 class="mt-2 mb-1">Table ¹@table.TableNumber</h6>
+                        <h6 class="mt-2 mb-1">Table #@table.TableNumber</h6>
                         <span class="badge @GetStatusBadgeClass(table.Status)">
                             @GetStatusText(table.Status)
                         </span>
@@ -145,7 +145,7 @@
     <div class="offcanvas-backdrop fade show" @onclick="() => _detailsDrawerOpen = false"></div>
     <div class="offcanvas offcanvas-end show" tabindex="-1" style="visibility: visible;">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Table ¹@_selectedTable.TableNumber</h5>
+            <h5 class="offcanvas-title">Table #@_selectedTable.TableNumber</h5>
             <button type="button" class="btn-close" @onclick="() => _detailsDrawerOpen = false"></button>
         </div>
         <div class="offcanvas-body">
@@ -321,7 +321,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-calendar-plus me-2"></i>
-                        Reserve table ¹@_selectedTable?.TableNumber
+                        Reserve table #@_selectedTable?.TableNumber
                     </h5>
                     <button type="button" class="btn-close" @onclick="() => _reserveDialogOpen = false"></button>
                 </div>
@@ -370,7 +370,7 @@
                     <button type="button" class="btn-close" @onclick="() => _deleteDialogOpen = false"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete Table ¹@_selectedTable?.TableNumber?</p>
+                    <p>Are you sure you want to delete Table #@_selectedTable?.TableNumber?</p>
                     <p class="text-muted small">This action cannot be undone.</p>
                 </div>
                 <div class="modal-footer">
