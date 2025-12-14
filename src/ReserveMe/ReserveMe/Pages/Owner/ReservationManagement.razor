@@ -1,0 +1,391 @@
+@page "/owner/reservations"
+@namespace ReserveMe.Pages.Owner
+
+<PageTitle>Reservation Management - ReserveMe</PageTitle>
+
+<div class="container-fluid py-4">
+
+    @* Header *@
+    <div class="mb-4">
+        <h4 class="fw-bold mb-1">Reservation Management</h4>
+        <p class="text-muted mb-0">View and manage all reservations in your venue</p>
+    </div>
+
+    @* Statistics *@
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #424242, #616161);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_filteredReservations.Count()</h3>
+                    <small class="opacity-75">Total</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #F57C00, #FF9800);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_filteredReservations.Count(r => r.Status == ReservationStatus.Pending)</h3>
+                    <small class="opacity-75">Pending</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #388E3C, #4CAF50);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_filteredReservations.Count(r => r.Status == ReservationStatus.Approved)</h3>
+                    <small class="opacity-75">Approved</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #1976D2, #2196F3);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_filteredReservations.Count(r => r.Status == ReservationStatus.InProgress)</h3>
+                    <small class="opacity-75">In progress</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" placeholder="Search by name or phone..."
+                               @bind="_searchTerm" @bind:event="oninput" />
+                        @if (!string.IsNullOrEmpty(_searchTerm))
+                        {
+                            <button class="btn btn-outline-secondary" @onclick="() => _searchTerm = string.Empty">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-primary" @onclick="ShowToday">
+                            <i class="bi bi-calendar-day me-1"></i> Today
+                        </button>
+                        @if (HasActiveFilters)
+                        {
+                            <button class="btn btn-outline-danger" @onclick="ClearFilters">
+                                <i class="bi bi-x-circle me-1"></i> Clear filters
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <hr />
+
+            <div class="row g-3">
+    <div class="col-6 col-md-2">
+        <label class="form-label small">Date from</label>
+        <input type="date" class="form-control" 
+               value="@(_dateFrom?.ToString("yyyy-MM-dd"))" 
+               @onchange="@(e => _dateFrom = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!))" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small">Date to</label>
+        <input type="date" class="form-control" 
+               value="@(_dateTo?.ToString("yyyy-MM-dd"))" 
+               @onchange="@(e => _dateTo = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!))" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small">Time from</label>
+        <input type="time" class="form-control" 
+               value="@(_timeFrom?.ToString(@"hh\:mm"))" 
+               @onchange="@(e => _timeFrom = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()!))" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small">Time to</label>
+        <input type="time" class="form-control" 
+               value="@(_timeTo?.ToString(@"hh\:mm"))" 
+               @onchange="@(e => _timeTo = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()!))" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small">Table number</label>
+        <input type="number" class="form-control" @bind="_tableNumberFilter" min="1" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small">Status</label>
+        <select class="form-select" @bind="_statusFilter">
+            <option value="">All statuses</option>
+            <option value="@ReservationStatus.Pending">Pending confirmation</option>
+            <option value="@ReservationStatus.Approved">Approved</option>
+            <option value="@ReservationStatus.InProgress">In progress</option>
+            <option value="@ReservationStatus.Declined">Declined</option>
+            <option value="@ReservationStatus.Completed">Completed</option>
+        </select>
+    </div>
+</div>
+        </div>
+    </div>
+
+    @* Table *@
+    <div class="card">
+        <div class="card-body p-0">
+            @if (_isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+            else if (!_filteredReservations.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                    <h5 class="mt-3 text-muted">No reservations found</h5>
+                    <p class="text-muted">Try adjusting the filters</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Customer</th>
+                                <th>Date and time</th>
+                                <th>Guests</th>
+                                <th>Table</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reservation in _pagedReservations)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle">
+                                                @GetInitials(reservation.CustomerName)
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">@reservation.CustomerName</div>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-telephone me-1"></i>@reservation.PhoneNumber
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <i class="bi bi-calendar me-1"></i>@reservation.ReservationDate.ToString("dd.MM.yyyy")
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>@reservation.ReservationTime.ToString(@"hh\:mm")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-people me-1"></i>@reservation.GuestCount guests
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-table me-1"></i>Table #@reservation.TableNumber
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(reservation.Status)">
+                                            @GetStatusText(reservation.Status)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(reservation.Notes))
+                                        {
+                                            <span data-bs-toggle="tooltip" title="@reservation.Notes">
+                                                <i class="bi bi-chat-text text-muted"></i>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                @if (reservation.Status == ReservationStatus.Pending)
+                                                {
+                                                    <li>
+                                                        <button class="dropdown-item text-success" @onclick="() => ChangeStatus(reservation, ReservationStatus.Approved)">
+                                                            <i class="bi bi-check-lg me-2"></i>Accept
+                                                        </button>
+                                                    </li>
+                                                    <li>
+                                                        <button class="dropdown-item text-danger" @onclick="() => ChangeStatus(reservation, ReservationStatus.Declined)">
+                                                            <i class="bi bi-x-lg me-2"></i>Decline
+                                                        </button>
+                                                    </li>
+                                                }
+                                                @if (reservation.Status == ReservationStatus.Approved)
+                                                {
+                                                    <li>
+                                                        <button class="dropdown-item text-info" @onclick="() => ChangeStatus(reservation, ReservationStatus.InProgress)">
+                                                            <i class="bi bi-play-fill me-2"></i>Start
+                                                        </button>
+                                                    </li>
+                                                }
+                                                @if (reservation.Status == ReservationStatus.InProgress)
+                                                {
+                                                    <li>
+                                                        <button class="dropdown-item text-success" @onclick="() => ChangeStatus(reservation, ReservationStatus.Completed)">
+                                                            <i class="bi bi-check-circle me-2"></i>Complete
+                                                        </button>
+                                                    </li>
+                                                }
+                                                @if (reservation.Status == ReservationStatus.Declined || reservation.Status == ReservationStatus.Completed)
+                                                {
+                                                    <li>
+                                                        <button class="dropdown-item" @onclick="() => ChangeStatus(reservation, ReservationStatus.Pending)">
+                                                            <i class="bi bi-arrow-counterclockwise me-2"></i>Move to pending
+                                                        </button>
+                                                    </li>
+                                                }
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button class="dropdown-item" @onclick="() => ViewDetails(reservation)">
+                                                        <i class="bi bi-eye me-2"></i>Details
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* Pagination *@
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">Rows per page:</span>
+                        <select class="form-select form-select-sm" style="width: 80px;" @bind="_pageSize" @bind:after="ResetPage">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">
+                            @((_currentPage - 1) * _pageSize + 1)-@Math.Min(_currentPage * _pageSize, _filteredReservations.Count()) of @_filteredReservations.Count()
+                        </span>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(_currentPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousPage">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                </li>
+                                <li class="page-item @(_currentPage >= _totalPages ? "disabled" : "")">
+                                    <button class="page-link" @onclick="NextPage">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <p class="text-center text-muted small mt-3">
+        Showing @_filteredReservations.Count() of @_reservations.Count reservations
+    </p>
+</div>
+
+@* Details Modal *@
+@if (_showDetailsDialog && _selectedReservation != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>Reservation details
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _showDetailsDialog = false"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-person me-2"></i>Customer</span>
+                            <strong>@_selectedReservation.CustomerName</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-telephone me-2"></i>Phone</span>
+                            <strong>@_selectedReservation.PhoneNumber</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-calendar me-2"></i>Date</span>
+                            <strong>@_selectedReservation.ReservationDate.ToString("dd.MM.yyyy")</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-clock me-2"></i>Time</span>
+                            <strong>@_selectedReservation.ReservationTime.ToString(@"hh\:mm")</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-people me-2"></i>Guests</span>
+                            <strong>@_selectedReservation.GuestCount guests</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-table me-2"></i>Table</span>
+                            <strong>#@_selectedReservation.TableNumber</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-flag me-2"></i>Status</span>
+                            <span class="badge @GetStatusBadgeClass(_selectedReservation.Status)">
+                                @GetStatusText(_selectedReservation.Status)
+                            </span>
+                        </li>
+                        @if (!string.IsNullOrEmpty(_selectedReservation.Notes))
+                        {
+                            <li class="list-group-item">
+                                <div><i class="bi bi-sticky me-2"></i>Notes</div>
+                                <div class="mt-1 text-muted">@_selectedReservation.Notes</div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _showDetailsDialog = false">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .dropdown-item {
+        font-size: 0.875rem;
+    }
+</style>
