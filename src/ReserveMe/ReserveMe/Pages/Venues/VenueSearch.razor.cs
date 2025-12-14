@@ -5,7 +5,7 @@ namespace ReserveMe.Pages.Venues;
 public partial class VenueSearch : ComponentBase
 {
     // Location
-    private string _currentLocation = "София, ул. Витоша 50";
+    private string _currentLocation = "Sofia, Vitosha Blvd 50";
     private int _selectedRadius = 5;
 
     // Search and filters
@@ -160,15 +160,15 @@ public partial class VenueSearch : ComponentBase
 
     private static string GetVenueTypeName(VenueType type) => type switch
     {
-        VenueType.Restaurant => "Ресторант",
-        VenueType.Bar => "Бар",
-        VenueType.Cafe => "Кафене",
-        VenueType.Grill => "Скара",
-        VenueType.Pizzeria => "Пицария",
-        VenueType.FastFood => "Бързо хранене",
-        VenueType.Pub => "Пъб",
-        VenueType.Bistro => "Бистро",
-        _ => "Друго"
+        VenueType.Restaurant => "Restaurant",
+        VenueType.Bar => "Bar",
+        VenueType.Cafe => "Cafe",
+        VenueType.Grill => "Grill",
+        VenueType.Pizzeria => "Pizzeria",
+        VenueType.FastFood => "Fast food",
+        VenueType.Pub => "Pub",
+        VenueType.Bistro => "Bistro",
+        _ => "Other"
     };
 
     private static string GetVenueTypeIcon(VenueType type) => type switch
@@ -197,7 +197,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.8,
                 ReviewCount = 245,
                 Distance = 0.5,
-                Address = "ул. Граф Игнатиев 15",
+                Address = "Graf Ignatiev St 15",
                 TotalReservations = 1250,
                 ImageUrl = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=100&h=100&fit=crop",
@@ -211,7 +211,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.5,
                 ReviewCount = 189,
                 Distance = 1.2,
-                Address = "бул. Витоша 88",
+                Address = "Vitosha Blvd 88",
                 TotalReservations = 890,
                 ImageUrl = "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=100&h=100&fit=crop",
@@ -225,7 +225,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.7,
                 ReviewCount = 312,
                 Distance = 2.1,
-                Address = "ул. Солунска 22",
+                Address = "Solunska St 22",
                 TotalReservations = 2100,
                 ImageUrl = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop",
@@ -239,7 +239,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.3,
                 ReviewCount = 156,
                 Distance = 0.8,
-                Address = "пл. Славейков 5",
+                Address = "Slaveykov Sq 5",
                 TotalReservations = 450,
                 ImageUrl = "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=100&h=100&fit=crop",
@@ -253,7 +253,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.6,
                 ReviewCount = 278,
                 Distance = 1.5,
-                Address = "ул. Раковски 100",
+                Address = "Rakovski St 100",
                 TotalReservations = 1800,
                 ImageUrl = "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=100&h=100&fit=crop",
@@ -267,7 +267,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.9,
                 ReviewCount = 420,
                 Distance = 3.2,
-                Address = "бул. Черни връх 47",
+                Address = "Cherni Vrah Blvd 47",
                 TotalReservations = 3200,
                 ImageUrl = "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1560512823-829485b8bf24?w=100&h=100&fit=crop",
@@ -281,7 +281,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 3.8,
                 ReviewCount = 520,
                 Distance = 0.3,
-                Address = "бул. Мария Луиза 2",
+                Address = "Maria Luiza Blvd 2",
                 TotalReservations = 5600,
                 ImageUrl = "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1550547660-d9450f859349?w=100&h=100&fit=crop",
@@ -295,7 +295,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.4,
                 ReviewCount = 98,
                 Distance = 1.8,
-                Address = "ул. Шипка 34",
+                Address = "Shipka St 34",
                 TotalReservations = 320,
                 ImageUrl = "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=100&h=100&fit=crop",
@@ -304,12 +304,12 @@ public partial class VenueSearch : ComponentBase
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Механа При Дядо",
+                Name = "Grandpa's Tavern",
                 Type = VenueType.Restaurant,
                 Rating = 4.7,
                 ReviewCount = 356,
                 Distance = 4.5,
-                Address = "с. Бистрица, ул. Главна 1",
+                Address = "Bistritsa Village, Glavna St 1",
                 TotalReservations = 980,
                 ImageUrl = "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=100&h=100&fit=crop",
@@ -323,7 +323,7 @@ public partial class VenueSearch : ComponentBase
                 Rating = 4.2,
                 ReviewCount = 145,
                 Distance = 2.8,
-                Address = "ул. Цар Шишман 12",
+                Address = "Tsar Shishman St 12",
                 TotalReservations = 670,
                 ImageUrl = "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400",
                 LogoUrl = "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=100&h=100&fit=crop",
