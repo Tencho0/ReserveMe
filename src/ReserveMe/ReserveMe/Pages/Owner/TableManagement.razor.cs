@@ -238,10 +238,10 @@ private void OnTimeChanged(ChangeEventArgs e)
 
     private static string GetStatusText(TableStatus status) => status switch
     {
-        TableStatus.Available => "Свободна",
-        TableStatus.Occupied => "Заета",
-        TableStatus.Reserved => "Резервирана",
-        _ => "Неизвестен"
+        TableStatus.Available => "Available",
+        TableStatus.Occupied => "Occupied",
+        TableStatus.Reserved => "Reserved",
+        _ => "Unknown"
     };
 
     // Mock Data
@@ -258,7 +258,7 @@ private void OnTimeChanged(ChangeEventArgs e)
             Status = TableStatus.Reserved,
             IsActive = true,
             ActiveReservationId = Guid.NewGuid(),
-            CustomerName = "Мария Георгиева",
+            CustomerName = "Maria Georgieva",
             CustomerPhone = "+359 899 234 567",
             ReservationDate = DateTime.Today.AddDays(1),
             ReservationTime = new TimeSpan(20, 30, 0),
@@ -276,7 +276,7 @@ private void OnTimeChanged(ChangeEventArgs e)
             Status = TableStatus.Reserved,
             IsActive = true,
             ActiveReservationId = Guid.NewGuid(),
-            CustomerName = "Иван Петров",
+            CustomerName = "Ivan Petrov",
             CustomerPhone = "+359 888 123 456",
             ReservationDate = DateTime.Today,
             ReservationTime = new TimeSpan(19, 0, 0),
