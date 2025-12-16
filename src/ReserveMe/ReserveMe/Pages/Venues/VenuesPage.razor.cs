@@ -6,6 +6,7 @@
 	using Microsoft.JSInterop;
 	using Shared.Dtos.Venues;
 	using Shared.Dtos.VenueTypes;
+	using Shared.Services.Media;
 	using Shared.Services.Venues;
 	using Shared.Services.VenueTypes;
 
@@ -13,8 +14,11 @@
 	{
 		[Inject] private IVenuesService _venuesService { get; set; } = null!;
 		[Inject] private IVenueTypesService _venueTypesService { get; set; } = null!;
+		[Inject] private IMediaService _mediaService { get; set; } = null!;
 		[Inject] private IJSRuntime jsRuntime { get; set; }
 		[Inject] private AuthenticationStateProvider authStateProvider { get; set; } = null!;
+
+		private string env = "https://localhost:7000";
 
 		private List<VenueAdminDto> venues = new List<VenueAdminDto>();
 
@@ -57,6 +61,44 @@
 			finally
 			{
 				isSubmitting = false;
+			}
+		}
+
+		private async Task OnLogoSelected(InputFileChangeEventArgs e)
+		{
+			var file = e.File;
+			if (file != null)
+			{
+				try
+				{
+					var result = await _mediaService.UploadImage(file);
+
+					if (result != null && !string.IsNullOrEmpty(result.SavePath))
+					{
+						venueDto.LogoUrl = result.SavePath;
+					}
+				}
+				catch (Exception ex)
+				{ }
+			}
+		}
+
+		private async Task OnImageSelected(InputFileChangeEventArgs e)
+		{
+			var file = e.File;
+			if (file != null)
+			{
+				try
+				{
+					var result = await _mediaService.UploadImage(file);
+
+					if (result != null && !string.IsNullOrEmpty(result.SavePath))
+					{
+						venueDto.ImageUrl = result.SavePath;
+					}
+				}
+				catch (Exception ex)
+				{ }
 			}
 		}
 

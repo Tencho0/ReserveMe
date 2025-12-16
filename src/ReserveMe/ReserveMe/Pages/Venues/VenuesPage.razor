@@ -136,6 +136,18 @@
                             </button>
                         </div>
 
+                        <div class="col-xl-12">
+                            <label class="form-label" for="venue-logo">Logo</label>
+                            <InputFile OnChange="OnLogoSelected" />
+                            <ValidationMessage For="@(() => venueDto.LogoUrl)" class="text-danger" />
+                        </div>
+
+                        <div class="col-xl-12">
+                            <label class="form-label" for="venue-image">Image</label>
+                            <InputFile OnChange="OnImageSelected" />
+                            <ValidationMessage For="@(() => venueDto.ImageUrl)" class="text-danger" />
+                        </div>
+
                         <div class="modal-body px-4">
                             <div class="row gy-3">
 

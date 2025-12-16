@@ -28,6 +28,12 @@
 
 		#endregion
 
+		#region Media
+
+		public static string UploadImage = $"{BaseAddressApi}media/upload";
+
+		#endregion
+
 		public static string Reservations = $"{BaseAddressApi}reservations/reserve";
 	}
 }
