@@ -71,77 +71,40 @@
 			}
 		}
 
-		private async Task OnLogoSelected(InputFileChangeEventArgs e)
-		{
-			var file = e.File;
-			if (file != null)
-			{
-				try
-				{
-					var result = await _mediaService.UploadImage(file);
-
-					if (result != null && !string.IsNullOrEmpty(result.SavePath))
-					{
-						venueDto.LogoUrl = result.SavePath;
-					}
-				}
-				catch (Exception ex)
-				{ }
-			}
-		}
-
-		private async Task OnImageSelected(InputFileChangeEventArgs e)
-		{
-			var file = e.File;
-			if (file != null)
-			{
-				try
-				{
-					var result = await _mediaService.UploadImage(file);
-
-					if (result != null && !string.IsNullOrEmpty(result.SavePath))
-					{
-						venueDto.ImageUrl = result.SavePath;
-					}
-				}
-				catch (Exception ex)
-				{ }
-			}
-		}
-
-		//async Task OnFileSelected(InputFileChangeEventArgs e)
-		//{
-		//	selectedFile = e.File;
-		//	using var ms = new MemoryStream();
-		//	await selectedFile.OpenReadStream(MaxAllowedSize).CopyToAsync(ms);
-		//	var originalDataUrl =
-		//	  $"data:{selectedFile.ContentType};base64,{Convert.ToBase64String(ms.ToArray())}";
-
-		//	SelectedImage = originalDataUrl;
-		//}
-
 		private async Task OnLogoFileSelected(InputFileChangeEventArgs e)
 		{
 			var file = e.File;
-			if (file is null) return;
 
-			SelectedLogo = await ToDataUrl(file);
+			try
+			{
+				if (file is null) return;
 
-			var result = await _mediaService.UploadImage(file);
-			if (result != null && !string.IsNullOrEmpty(result.SavePath))
-				venueDto.LogoUrl = result.SavePath;
+				SelectedLogo = await ToDataUrl(file);
+
+				var result = await _mediaService.UploadImage(file);
+				if (result != null && !string.IsNullOrEmpty(result.FileUrl))
+					venueDto.LogoUrl = result.FileUrl;
+			}
+			catch (Exception ex)
+			{ }
 		}
 
 		private async Task OnVenueImageFileSelected(InputFileChangeEventArgs e)
 		{
 			var file = e.File;
-			if (file is null) return;
 
-			SelectedVenueImage = await ToDataUrl(file);
+			try
+			{
+				if (file is null) return;
 
-			var result = await _mediaService.UploadImage(file);
-			if (result != null && !string.IsNullOrEmpty(result.SavePath))
-				venueDto.ImageUrl = result.SavePath;
+				SelectedVenueImage = await ToDataUrl(file);
+
+				var result = await _mediaService.UploadImage(file);
+				if (result != null && !string.IsNullOrEmpty(result.FileUrl))
+					venueDto.ImageUrl = result.FileUrl;
+			}
+			catch (Exception ex)
+			{ }
 		}
 
 		private async Task<string> ToDataUrl(IBrowserFile file)

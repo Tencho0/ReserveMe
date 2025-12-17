@@ -25,11 +25,12 @@
 
 				var fileName = $"{Guid.NewGuid()}_{file.FileName}";
 				var savePath = Path.Combine(folderPath, fileName);
+				var fileUrl = Path.Combine("https://localhost:7118", "StaticFiles", "Media", fileName);
 
 				using var stream = System.IO.File.Create(savePath);
 				await file.CopyToAsync(stream);
 
-				return Ok(new { fileName = file.FileName, savePath = savePath });
+				return Ok(new { fileName = file.FileName, fileUrl = fileUrl });
 			}
 			catch (Exception ex)
 			{
