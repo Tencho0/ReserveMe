@@ -1,17 +1,19 @@
 ﻿namespace Infrastructure
 {
 	using System.Reflection;
+	using Application.Common.Services.Data;
 	using Domain.Entities;
 	using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 	using Microsoft.EntityFrameworkCore;
 
-	public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+	public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
 	{
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
 		 : base(options)
 		{
 		}
 
+		public DbSet<ApplicationUser> Users => Set<ApplicationUser>();
 		public DbSet<Venue> Venues => Set<Venue>();
 		public DbSet<VenueType> VenueTypes => Set<VenueType>();
 		public DbSet<Table> Tables => Set<Table>();

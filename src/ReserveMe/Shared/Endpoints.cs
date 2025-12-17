@@ -14,6 +14,28 @@
 
 		#endregion
 
+		#region Venues
+
+		public static string GetVenues = $"{BaseAddressApi}venues/getAll";
+
+		public static string CreateVenue = $"{BaseAddressApi}venues/create";
+
+		public static string DeleteVenue = $"{BaseAddressApi}venues/delete";
+
+		#endregion
+
+		#region VenueTypes
+
+		public static string GetVenueTypes = $"{BaseAddressApi}venueTypes/getAll";
+
+		#endregion
+
+		#region Media
+
+		public static string UploadImage = $"{BaseAddressApi}media/upload";
+
+		#endregion
+
 		public static string Reservations = $"{BaseAddressApi}reservations/reserve";
 	}
 }

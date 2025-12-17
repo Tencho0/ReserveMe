@@ -1,0 +1,279 @@
+﻿@page "/admin/venues"
+@inject Microsoft.AspNetCore.Components.NavigationManager NavigationManager
+
+<PageTitle>Manage Venues</PageTitle>
+
+<AuthorizeView Roles="SuperAdmin">
+    <Authorized Context="authState">
+        <h1 class="page-title fw-medium fs-18 mb-2">Manage Venues</h1>
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <button type="button"
+                                    class="btn btn-primary me-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#edit-item">
+                                <i class="ri-add-line me-1 fw-medium align-middle"></i>
+                                Add new Venue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card custom-card overflow-hidden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table text-nowrap" style="min-height: 140px">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Venue Name</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Venue Type</th>
+                                        <th scope="col">Location</th>
+                                        <th scope="col">Created At</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var venue in venues)
+                                    {
+                                        var venueType = venue.VenueType?.Name;
+
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-2">
+                                                        <span class="avatar avatar-rounded p-1 bg-danger-transparent">
+                                                            @if (!string.IsNullOrEmpty(venue.LogoUrl))
+                                                            {
+                                                                <img src="@($"{venue.LogoUrl}")">
+                                                            }
+                                                            else
+                                                            {
+                                                                <img src="@($"../assets/images/emptyImg.jpg")" alt="">
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex-fill">
+                                                        <a href="/admin/venues/@venue.Id" class="fw-medium fs-14 d-block text-truncate project-list-title">@venue.Name</a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <p class="text-muted mb-0 project-list-description">@venue.Description</p>
+                                            </td>
+                                            <td>
+                                                @if (string.IsNullOrEmpty(venueType))
+                                                {
+                                                    <span class="text-danger">"No Owner"</span>
+                                                }
+                                                else
+                                                {
+                                                    @venueType
+                                                }
+                                            </td>
+                                            <td>
+                                                @venue.Longitude° N, @venue.Latitude° W
+                                            </td>
+                                            <td>
+                                                @if (venue.CreatedAt.HasValue)
+                                                {
+                                                    @venue.CreatedAt.Value.ToString("dd MMMM yyyy")
+                                                }
+                                                else
+                                                {
+                                                    <em>"NoDateSet_Label"</em>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2">
+                                                    <a class="btn btn-icon btn-sm btn-info-light btn-wave" href="/admin/venues/@venue.Id" title="Manage venue properties">
+                                                        <i class="ri-edit-line"></i>
+                                                    </a>
+                                                    <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-danger-light btn-wave"
+                                                       @onclick='() => ShowDeleteConfirmation("Delete Venue", venue.Id, venue.Name)'>
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Modals *@
+
+        <EditForm EditContext="venueEditContext" OnValidSubmit="CreateVenue">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="modal fade" id="edit-item" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h6 class="modal-title">Venue</h6>
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                    @onclick="OnCancelVenue">
+                            </button>
+                        </div>
+
+                        <div class="row gy-3">
+
+                            <!-- LOGO PICKER -->
+                            <div class="col-xl-6">
+                                <div class="text-center">
+                                    <div class="fw-medium mb-2">Logo</div>
+
+                                    <span class="avatar avatar-xxl avatar-rounded position-relative">
+                                        <img src="@SelectedLogo" alt="Logo" />
+                                        <span class="badge rounded-pill bg-primary avatar-badge">
+                                            <InputFile OnChange="OnLogoFileSelected" accept="image/*" class="position-absolute w-100 h-100 op-0" />
+                                            <i class="fe fe-camera"></i>
+                                        </span>
+                                    </span>
+
+                                    <ValidationMessage For="@(() => venueDto.LogoUrl)" class="text-danger" />
+                                </div>
+                            </div>
+
+                            <!-- IMAGE PICKER -->
+                            <div class="col-xl-6">
+                                <div class="text-center">
+                                    <div class="fw-medium mb-2">Venue image</div>
+
+                                    <span class="avatar avatar-xxl avatar-rounded position-relative">
+                                        <img src="@SelectedVenueImage" alt="Venue image" />
+                                        <span class="badge rounded-pill bg-primary avatar-badge">
+                                            <InputFile OnChange="OnVenueImageFileSelected" accept="image/*" class="position-absolute w-100 h-100 op-0" />
+                                            <i class="fe fe-camera"></i>
+                                        </span>
+                                    </span>
+
+                                    <ValidationMessage For="@(() => venueDto.ImageUrl)" class="text-danger" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-body px-4">
+                            <div class="row gy-3">
+
+                                <div class="col-xl-12">
+                                    <label class="form-label" for="venue-name">Venue Name</label>
+                                    <InputText id="venue-name"
+                                               class="form-control"
+                                               @bind-Value="venueDto.Name" />
+                                    <ValidationMessage For="@(() => venueDto.Name)" class="text-danger" />
+                                </div>
+
+                                <div class="col-xl-12">
+                                    <label class="form-label" for="venue-desc">Description</label>
+                                    <InputTextArea id="venue-desc"
+                                                   class="form-control"
+                                                   style="min-height: 55px; max-height: 110px;"
+                                                   @bind-Value="venueDto.Description" />
+                                    <ValidationMessage For="@(() => venueDto.Description)" class="text-danger" />
+                                </div>
+
+                                <div class="col-xl-12">
+                                    <label class="form-label" for="venue-type">Venue Type</label>
+                                    <InputSelect id="venue-type"
+                                                 class="form-select"
+                                                 @bind-Value="venueDto.VenueTypeId">
+                                        <option value="">-- Select type --</option>
+                                        @foreach (var t in venueTypes)
+                                        {
+                                            <option value="@t.Id">@t.Name</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => venueDto.VenueTypeId)" class="text-danger" />
+                                </div>
+
+                                <div class="col-xl-6">
+                                    <label class="form-label" for="venue-lat">Latitude</label>
+                                    <InputNumber id="venue-lat"
+                                                 class="form-control"
+                                                 placeholder="e.g. 42.6977"
+                                                 @bind-Value="venueDto.Latitude" />
+                                    <ValidationMessage For="@(() => venueDto.Latitude)" class="text-danger" />
+                                </div>
+
+                                <div class="col-xl-6">
+                                    <label class="form-label" for="venue-lng">Longitude</label>
+                                    <InputNumber id="venue-lng"
+                                                 class="form-control"
+                                                 placeholder="e.g. 23.3219"
+                                                 @bind-Value="venueDto.Longitude" />
+                                    <ValidationMessage For="@(() => venueDto.Longitude)" class="text-danger" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-light"
+                                    data-bs-dismiss="modal"
+                                    @onclick="OnCancelVenue">
+                                Cancel
+                            </button>
+
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    disabled="@isSubmitting">
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+
+        @if (isDeleteModalVisible)
+        {
+            <div class="modal-backdrop fade show"></div>
+            <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h6 class="modal-title">@title</h6>
+                            <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="width: 100%; white-space: normal; overflow-wrap: break-word; word-break: break-word;">@deleteMessage</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger rounded-pill btn-wave" @onclick="ConfirmDelete">Delete</button>
+                            <button type="button" class="btn btn-light rounded-pill btn-wave" @onclick="CloseModal">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+<script>
+    window.clickModalClose = (modalId) => {
+      const el = document.getElementById(modalId);
+      if (!el) return;
+      const closeBtn = el.querySelector(".btn-close");
+      if (closeBtn) closeBtn.click();
+    };
+</script>
