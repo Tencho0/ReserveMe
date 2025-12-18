@@ -1,6 +1,7 @@
 using Common.Enums;
 using Microsoft.AspNetCore.Components;
 using Shared.Dtos.Reservations;
+using Shared.Helpers;
 using Shared.Services.Reservations;
 
 namespace ReserveMe.Pages.Owner;
@@ -8,6 +9,8 @@ namespace ReserveMe.Pages.Owner;
 public partial class ReservationManagement : ComponentBase
 {
 	[Inject] private IReservationsService _reservationsService { get; set; } = null!;
+
+	[Inject] private IAuthenticationHelper _authHelper { get; set; } = null!;
 
 	// Filters
 	private string _searchTerm = string.Empty;
@@ -74,7 +77,7 @@ public partial class ReservationManagement : ComponentBase
 
 	protected override async Task OnInitializedAsync()
 	{
-		int venueId = 1;
+		int venueId = await _authHelper.GetUserMenuId();
 
 		_reservations = await _reservationsService.GetReservations(venueId);
 	}
