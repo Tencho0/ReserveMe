@@ -1,5 +1,6 @@
 @page "/owner/reservations"
 @namespace ReserveMe.Pages.Owner
+@using Common.Enums
 
 <PageTitle>Reservation Management - ReserveMe</PageTitle>
 
@@ -82,46 +83,46 @@
             <hr />
 
             <div class="row g-3">
-    <div class="col-6 col-md-2">
-        <label class="form-label small">Date from</label>
-        <input type="date" class="form-control" 
-               value="@(_dateFrom?.ToString("yyyy-MM-dd"))" 
-               @onchange="@(e => _dateFrom = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!))" />
-    </div>
-    <div class="col-6 col-md-2">
-        <label class="form-label small">Date to</label>
-        <input type="date" class="form-control" 
-               value="@(_dateTo?.ToString("yyyy-MM-dd"))" 
-               @onchange="@(e => _dateTo = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!))" />
-    </div>
-    <div class="col-6 col-md-2">
-        <label class="form-label small">Time from</label>
-        <input type="time" class="form-control" 
-               value="@(_timeFrom?.ToString(@"hh\:mm"))" 
-               @onchange="@(e => _timeFrom = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()!))" />
-    </div>
-    <div class="col-6 col-md-2">
-        <label class="form-label small">Time to</label>
-        <input type="time" class="form-control" 
-               value="@(_timeTo?.ToString(@"hh\:mm"))" 
-               @onchange="@(e => _timeTo = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()!))" />
-    </div>
-    <div class="col-6 col-md-2">
-        <label class="form-label small">Table number</label>
-        <input type="number" class="form-control" @bind="_tableNumberFilter" min="1" />
-    </div>
-    <div class="col-6 col-md-2">
-        <label class="form-label small">Status</label>
-        <select class="form-select" @bind="_statusFilter">
-            <option value="">All statuses</option>
-            <option value="@ReservationStatus.Pending">Pending confirmation</option>
-            <option value="@ReservationStatus.Approved">Approved</option>
-            <option value="@ReservationStatus.InProgress">In progress</option>
-            <option value="@ReservationStatus.Declined">Declined</option>
-            <option value="@ReservationStatus.Completed">Completed</option>
-        </select>
-    </div>
-</div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small">Date from</label>
+                    <input type="date" class="form-control"
+                           value="@(_dateFrom?.ToString("yyyy-MM-dd"))"
+                           @onchange="@(e => _dateFrom = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!))" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small">Date to</label>
+                    <input type="date" class="form-control"
+                           value="@(_dateTo?.ToString("yyyy-MM-dd"))"
+                           @onchange="@(e => _dateTo = string.IsNullOrEmpty(e.Value?.ToString()) ? null : DateTime.Parse(e.Value.ToString()!))" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small">Time from</label>
+                    <input type="time" class="form-control"
+                           value="@(_timeFrom?.ToString(@"hh\:mm"))"
+                           @onchange="@(e => _timeFrom = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()!))" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small">Time to</label>
+                    <input type="time" class="form-control"
+                           value="@(_timeTo?.ToString(@"hh\:mm"))"
+                           @onchange="@(e => _timeTo = string.IsNullOrEmpty(e.Value?.ToString()) ? null : TimeSpan.Parse(e.Value.ToString()!))" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small">Table number</label>
+                    <input type="number" class="form-control" @bind="_tableNumberFilter" min="1" />
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small">Status</label>
+                    <select class="form-select" @bind="_statusFilter">
+                        <option value="">All statuses</option>
+                        <option value="@ReservationStatus.Pending">Pending confirmation</option>
+                        <option value="@ReservationStatus.Approved">Approved</option>
+                        <option value="@ReservationStatus.InProgress">In progress</option>
+                        <option value="@ReservationStatus.Declined">Declined</option>
+                        <option value="@ReservationStatus.Completed">Completed</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -155,7 +156,7 @@
                                 <th>Guests</th>
                                 <th>Table</th>
                                 <th>Status</th>
-                                <th>Notes</th>
+                                @* <th>Notes</th> *@
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -166,26 +167,31 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="avatar-circle">
-                                                @GetInitials(reservation.CustomerName)
+                                                @GetInitials(reservation.ContactName)
                                             </div>
                                             <div>
-                                                <div class="fw-medium">@reservation.CustomerName</div>
+                                                <div class="fw-medium">@reservation.ContactName</div>
                                                 <small class="text-muted">
-                                                    <i class="bi bi-telephone me-1"></i>@reservation.PhoneNumber
+                                                    <i class="bi bi-telephone me-1"></i>@reservation.ContactPhone
                                                 </small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <div>
+
+                                        <i class="bi bi-calendar me-1"></i>@(reservation.ReservationTime?.ToString("dd.MM.yyyy") ?? "—")
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>@(reservation.ReservationTime?.ToString("HH:mm") ?? "—")
+                                        </small>
+                                        @*     <div>
                                             <i class="bi bi-calendar me-1"></i>@reservation.ReservationDate.ToString("dd.MM.yyyy")
                                         </div>
                                         <small class="text-muted">
                                             <i class="bi bi-clock me-1"></i>@reservation.ReservationTime.ToString(@"hh\:mm")
-                                        </small>
+                                        </small> *@
                                     </td>
                                     <td>
-                                        <i class="bi bi-people me-1"></i>@reservation.GuestCount guests
+                                        <i class="bi bi-people me-1"></i>@reservation.GuestsCount guests
                                     </td>
                                     <td>
                                         <i class="bi bi-table me-1"></i>Table #@reservation.TableNumber
@@ -195,7 +201,7 @@
                                             @GetStatusText(reservation.Status)
                                         </span>
                                     </td>
-                                    <td>
+                                    @*    <td>
                                         @if (!string.IsNullOrEmpty(reservation.Notes))
                                         {
                                             <span data-bs-toggle="tooltip" title="@reservation.Notes">
@@ -204,9 +210,9 @@
                                         }
                                         else
                                         {
-                                            <span class="text-muted">�</span>
+                                            <span class="text-muted">�</span>
                                         }
-                                    </td>
+                                    </td> *@
                                     <td class="text-end">
                                         <div class="dropdown">
                                             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
@@ -321,23 +327,23 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-person me-2"></i>Customer</span>
-                            <strong>@_selectedReservation.CustomerName</strong>
+                            <strong>@_selectedReservation.ContactName</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-telephone me-2"></i>Phone</span>
-                            <strong>@_selectedReservation.PhoneNumber</strong>
+                            <strong>@_selectedReservation.ContactPhone</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-calendar me-2"></i>Date</span>
-                            <strong>@_selectedReservation.ReservationDate.ToString("dd.MM.yyyy")</strong>
+                            <strong>@(_selectedReservation.ReservationTime?.ToString("dd.MM.yyyy") ?? "—")</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-clock me-2"></i>Time</span>
-                            <strong>@_selectedReservation.ReservationTime.ToString(@"hh\:mm")</strong>
+                            <strong>@(_selectedReservation.ReservationTime?.ToString("HH:mm") ?? "—")</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-people me-2"></i>Guests</span>
-                            <strong>@_selectedReservation.GuestCount guests</strong>
+                            <strong>@_selectedReservation.GuestsCount guests</strong>
                         </li>
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-table me-2"></i>Table</span>
@@ -349,13 +355,13 @@
                                 @GetStatusText(_selectedReservation.Status)
                             </span>
                         </li>
-                        @if (!string.IsNullOrEmpty(_selectedReservation.Notes))
+                        @*    @if (!string.IsNullOrEmpty(_selectedReservation.Notes))
                         {
                             <li class="list-group-item">
                                 <div><i class="bi bi-sticky me-2"></i>Notes</div>
                                 <div class="mt-1 text-muted">@_selectedReservation.Notes</div>
                             </li>
-                        }
+                        } *@
                     </ul>
                 </div>
                 <div class="modal-footer">

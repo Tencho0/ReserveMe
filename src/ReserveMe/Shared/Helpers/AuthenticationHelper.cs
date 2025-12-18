@@ -1,15 +1,20 @@
 ﻿namespace Shared.Helpers
 {
 	using System.Net.Http.Headers;
+	using System.Security.Claims;
 	using System.Threading.Tasks;
 	using Blazored.LocalStorage;
+	using Microsoft.AspNetCore.Components.Authorization;
 	using Shared.Authorization;
 	using Shared.Dtos;
 	using Shared.Providers;
 	using Shared.Requests;
+	using Shared.Services.Users;
 
 	public class AuthenticationHelper : IAuthenticationHelper
 	{
+		private readonly AuthenticationStateProvider _authenticationStateProvider;
+		private readonly IUserService _userService;
 		private readonly IApiProvider _provider;
 		private readonly HttpClient _httpClient;
 		private readonly ILocalStorageService _localStorage;
@@ -17,8 +22,10 @@
 		private const string TokenKey = "authToken";
 		private const string ExpiresAtKey = "authTokenExpiresAt";
 
-		public AuthenticationHelper(IApiProvider provider, HttpClient httpClient, ILocalStorageService localStorage)
+		public AuthenticationHelper(AuthenticationStateProvider authenticationStateProvider, IUserService userService, IApiProvider provider, HttpClient httpClient, ILocalStorageService localStorage)
 		{
+			_authenticationStateProvider = authenticationStateProvider;
+			_userService = userService;
 			_provider = provider;
 			_httpClient = httpClient;
 			_localStorage = localStorage;
@@ -108,6 +115,36 @@
 
 			_httpClient.DefaultRequestHeaders.Authorization =
 				new AuthenticationHeaderValue("Bearer", auth.Token);
+		}
+
+		public async Task<int> GetUserMenuId()
+		{
+			var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+			var user = authState.User;
+
+			if (user.Identity.IsAuthenticated)
+			{
+				var username = await GetUserName(user);
+				var currUser = await _userService.GetByNameAsync(await GetUserName(user));
+
+				return currUser?.VenueId ?? 0;
+			}
+
+			return 0;
+		}
+
+		public async Task<string> GetUserName(ClaimsPrincipal user)
+		{
+			var userClaims = user.Claims.ToList();
+
+			var userName = userClaims.FirstOrDefault(x => x.Type == "email")?.Value;
+
+			if (userName != null)
+			{
+				return userName;
+			}
+
+			return string.Empty;
 		}
 	}
 }

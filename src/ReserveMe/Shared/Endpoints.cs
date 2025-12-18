@@ -6,11 +6,17 @@
 
 		public static readonly string BaseAddressApi = $"{BaseAddress}api/";
 
-		#region Users
+		#region Auth
 
 		public static string RegisterUser = $"{BaseAddressApi}auth/register";
 
 		public static string LoginUser = $"{BaseAddressApi}auth/login";
+
+		#endregion
+
+		#region Users
+
+		public static string GetUserByName = $"{BaseAddressApi}users/getUserByName";
 
 		#endregion
 
@@ -36,6 +42,11 @@
 
 		#endregion
 
-		public static string Reservations = $"{BaseAddressApi}reservations/reserve";
+		#region Reservation
+
+		public static string GetReservations = $"{BaseAddressApi}reservations/getAll";
+
+		#endregion
+
 	}
 }

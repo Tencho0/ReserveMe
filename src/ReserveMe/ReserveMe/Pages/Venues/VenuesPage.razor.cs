@@ -22,13 +22,10 @@
 		string SelectedLogo { get; set; } = "../assets/images/emptyImg.jpg";
 		string SelectedVenueImage { get; set; } = "../assets/images/emptyImg.jpg";
 
-		private string env = "https://localhost:7000";
-
 		private List<VenueAdminDto> venues = new List<VenueAdminDto>();
 
 		private List<VenueTypeDto> venueTypes = new List<VenueTypeDto>();
 
-		private IBrowserFile? selectedFile;
 		const long MaxAllowedSize = 10 * 1024 * 1024;
 
 		private VenueCreateDto venueDto = new();
@@ -47,12 +44,6 @@
 
 			this.venues = await this._venuesService.GetVenues();
 			this.venueTypes = await this._venueTypesService.GetAllAsync();
-		}
-
-		private string? GetVenueOwner(int menuId)
-		{
-			//TODO: Get the real owner
-			return "Ivan Ivanov";
 		}
 
 		private async Task CreateVenue()
