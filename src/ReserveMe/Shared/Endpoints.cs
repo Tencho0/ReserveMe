@@ -46,6 +46,8 @@
 
 		public static string GetReservations = $"{BaseAddressApi}reservations/getAll";
 
+		public static string UpdateReservationStaus = $"{BaseAddressApi}reservations/updateStaus";
+
 		#endregion
 
 	}

@@ -2,8 +2,10 @@
 {
 	using System.Collections.Generic;
 	using System.Threading.Tasks;
+	using Common.Enums;
 	using Shared.Dtos.Reservations;
 	using Shared.Providers;
+	using Shared.Requests.Reservations;
 
 	public class ReservationsService : IReservationsService
 	{
@@ -32,6 +34,31 @@
 			catch (Exception ex)
 			{
 				return new List<ReservationDto>();
+			}
+		}
+
+		#endregion
+
+		#region PUT
+
+		public async Task<bool> ChangeReservationStatus(int reservationId, ReservationStatus newStatus)
+		{
+			try
+			{
+				var model = new UpdateReservationStatusRequest()
+				{
+					ReservationId = reservationId,
+					NewStatus = (int)newStatus
+				};
+
+				return await _provider.PutAsync<UpdateReservationStatusRequest, bool>(Endpoints.UpdateReservationStaus, model, null);
+			}
+			catch (Exception ex)
+			{
+				//TODO: Log error
+				//_logger.LogError(ex.Message);
+
+				return false;
 			}
 		}
 

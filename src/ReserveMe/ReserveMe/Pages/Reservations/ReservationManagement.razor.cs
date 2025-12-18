@@ -140,9 +140,10 @@ public partial class ReservationManagement : ComponentBase
 		StateHasChanged();
 	}
 
-	private void ChangeStatus(ReservationDto reservation, ReservationStatus newStatus)
+	private async void ChangeStatus(ReservationDto reservation, ReservationStatus newStatus)
 	{
 		reservation.Status = newStatus;
+		await _reservationsService.ChangeReservationStatus(reservation.Id, newStatus);
 		StateHasChanged();
 	}
 
