@@ -4,6 +4,7 @@
 	using Common;
 	using Domain.Entities;
 	using Microsoft.AspNetCore.Identity;
+	using Microsoft.EntityFrameworkCore;
 
 	public class AppDataSeeder
 	{
@@ -30,12 +31,128 @@
 
 		public async Task SeedAllAsync(CancellationToken cancellationToken)
 		{
+			if (_context.Roles.Any())
+			{
+				return;
+			}
+
 			// 1. Seed App User Roles
 			var roles = await UsersRolesDataSeeder.SeedData(_context, _roleManager, cancellationToken);
 			await SeedAdministratorsAsync(cancellationToken);
 			await SeedAppUsersAsync(cancellationToken);
+
+			// 3. Seed Venues with VenueTypes
+			var venues = await SeedVenuesAsync(cancellationToken);
 		}
 
+		private async Task<List<Venue>> SeedVenuesAsync(CancellationToken cancellationToken)
+		{
+			var items = new List<Venue>();
+
+			try
+			{
+				// 1) Ensure VenueTypes are seeded
+				if (!await _context.VenueTypes.AnyAsync(cancellationToken))
+				{
+					var venueTypes = new List<VenueType>
+					{
+						new VenueType { Name = "Restaurant" },
+						new VenueType { Name = "Bar" },
+						new VenueType { Name = "Cafe" },
+						new VenueType { Name = "Pub" },
+						new VenueType { Name = "Bistro" },
+					};
+
+					_context.VenueTypes.AddRange(venueTypes);
+					await _context.SaveChangesAsync(cancellationToken);
+				}
+
+				// 2) Load all VenueTypes from DB
+				var existingVenueTypes = await _context.VenueTypes
+					.AsNoTracking()
+					.ToListAsync(cancellationToken);
+
+				if (!existingVenueTypes.Any())
+				{
+					return items;
+				}
+
+				// 3) Seed Venues and assign a VenueType to each
+				for (var i = 0; i < 5; i++)
+				{
+					// e.g. rotate through types: 0,1,2,3,4,0,1,...
+					var type = existingVenueTypes[i % existingVenueTypes.Count];
+
+					items.Add(new Venue
+					{
+						VenueTypeId = type.Id,
+						Name = $"Venue {i + 1}",
+						Description = $"Description {i + 1}",
+						Latitude = 42.3915,
+						Longitude = 23.2111,
+						IsActive = true,
+						IsDeleted = false,
+						LogoUrl = string.Empty,
+						CreatedAt = DateTime.Now
+					});
+				}
+
+				_context.Venues.AddRange(items);
+				await _context.SaveChangesAsync(cancellationToken);
+
+				var profileStoragePath = Path.Combine(_envPath, _storagePath);
+
+				#region Users in venues
+
+				// Add Owner and Waiters per menu
+				for (var i = 0; i < items.Count; i++)
+				{
+					// Add Owner
+					var owner = new ApplicationUser()
+					{
+						VenueId = items[i].Id,
+						FirstName = "Owner",
+						LastName = items[i].Name,
+						UserName = $"owner{i.ToString("D2")}@local.com",
+						Email = $"owner{i.ToString("D2")}@local.com",
+						EmailConfirmed = true
+					};
+					owner.ProfilePicture = Task.Run(() => RandomFaceGenerator.GetRandomFaceAsync(profileStoragePath)).Result;
+					var result = await _userManager.CreateAsync(owner, _defaultPassword);
+					if (result.Succeeded)
+					{
+						await _userManager.AddToRoleAsync(owner, UserRoles.OWNER_ROLE);
+					}
+
+					// Add 3 waiters
+					for (int y = 0; y < 3; y++)
+					{
+						var waiter = new ApplicationUser()
+						{
+							VenueId = items[i].Id,
+							FirstName = "Waiter",
+							LastName = $"User {y.ToString("D2")}",
+							UserName = $"waiter{i.ToString("D2")}{y.ToString("D2")}@local.com",
+							Email = $"waiter{i.ToString("D2")}{y.ToString("D2")}@local.com",
+							EmailConfirmed = true
+						};
+						waiter.ProfilePicture = Task.Run(() => RandomFaceGenerator.GetRandomFaceAsync(profileStoragePath)).Result;
+						var waiterResult = await _userManager.CreateAsync(waiter, _defaultPassword);
+						if (waiterResult.Succeeded)
+						{
+							await _userManager.AddToRoleAsync(waiter, UserRoles.WAITER_ROLE);
+						}
+					}
+				}
+
+				#endregion
+			}
+			catch (Exception ex)
+			{
+			}
+
+			return items;
+		}
 
 		private async Task SeedAdministratorsAsync(CancellationToken cancellationToken)
 		{

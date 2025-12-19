@@ -1,27 +1,40 @@
 ﻿namespace ReserveMe.Server.Controllers
 {
+	using Application.Reservations.Commands;
+	using Application.Reservations.Queries;
 	using Microsoft.AspNetCore.Authorization;
-	using Microsoft.AspNetCore.Identity;
 	using Microsoft.AspNetCore.Mvc;
-	using Shared.Authorization;
-	using Shared.Requests;
+	using Shared.Dtos.Reservations;
+	using Shared.Requests.Reservations;
 
 	// only authenticated users can access this now
 	[Authorize]
 	//[Authorize(Roles = "SuperAdmin")]
 	public class ReservationsController : ApiControllerBase
 	{
-		//TODO: Test purposes only - remove later
-		[HttpPost("reserve")]
-		[Authorize(Roles = "SuperAdmin")]
-		public ActionResult<AuthResponse> Reserve([FromBody] LoginUserRequest request)
+
+		#region READ
+
+		[HttpGet("getAll/{venueId}")]
+		public async Task<ActionResult<List<ReservationDto>>> GetReservations(int venueId)
 		{
-			//TEST
-			AuthResponse authResponse = new AuthResponse()
-			{
-				Token = request.Email
-			};
-			return Ok(authResponse);
+			return await Mediator.Send(new GetReservationsQuery(venueId));
 		}
+
+		#endregion
+
+		#region UPDATE
+
+		[HttpPut("updateStaus")]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesDefaultResponseType]
+		public async Task<IActionResult> PutMenuItem(UpdateReservationStatusRequest request)
+		{
+			await Mediator.Send(new UpdateReservationStatusCommand(request));
+
+			return NoContent();
+		}
+
+		#endregion
 	}
 }

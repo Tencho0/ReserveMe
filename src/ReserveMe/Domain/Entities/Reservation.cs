@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities
 {
-	using Domain.Enums;
+	using Common.Enums;
 
 	public class Reservation
 	{
