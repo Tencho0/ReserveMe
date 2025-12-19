@@ -1,22 +1,30 @@
 using Microsoft.AspNetCore.Components;
-using ReserveMe.Pages.Owner;
+using System.Net.Http.Json;
+using Shared.Enums;
+using Shared.Dtos;
 
 namespace ReserveMe.Pages.Waiter;
 
 public partial class WaiterTableManagement : ComponentBase
 {
+    [Inject] private HttpClient Http { get; set; } = default!;
+
     // Filter
     private TableStatus? _statusFilter;
 
     // Data
-    private List<WaiterTableViewModel> _tables = new();
-    private WaiterTableViewModel? _selectedTable;
+    private List<TableDto> _tables = new();
+    private TableDto? _selectedTable;
 
     // UI State
     private bool _detailsDrawerOpen = false;
+    private bool _isLoading = false;
+
+    // TODO: Get from logged user's venue
+    private int _venueId = 2;
 
     // Filtered tables (only active for waiter view)
-    private IEnumerable<WaiterTableViewModel> FilteredTables => _tables
+    private IEnumerable<TableDto> FilteredTables => _tables
         .Where(t => t.IsActive)
         .Where(t => !_statusFilter.HasValue || t.Status == _statusFilter.Value)
         .OrderBy(t => t.TableNumber);
@@ -28,46 +36,99 @@ public partial class WaiterTableManagement : ComponentBase
 
     private async Task LoadTables()
     {
-        await Task.Delay(300);
-        _tables = GetMockTables();
+        _isLoading = true;
+        try
+        {
+            var result = await Http.GetFromJsonAsync<List<TableDto>>($"api/tables/venue/{_venueId}?includeInactive=true");
+            _tables = result ?? new List<TableDto>();
+
+            // Ако няма данни от API, използвай mock
+            if (!_tables.Any())
+            {
+                _tables = GetMockTables();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tables: {ex.Message}");
+            // При грешка използвай mock данни
+            _tables = GetMockTables();
+        }
+        _isLoading = false;
     }
 
-    private void SelectTable(WaiterTableViewModel table)
+    private void SelectTable(TableDto table)
     {
         _selectedTable = table;
         _detailsDrawerOpen = true;
     }
 
-    private void ChangeTableStatus(WaiterTableViewModel table, TableStatus newStatus)
+    private async Task ChangeTableStatus(TableDto table, TableStatus newStatus)
     {
-        table.Status = newStatus;
-
-        if (newStatus == TableStatus.Available)
+        try
         {
-            table.ReservationId = null;
-            table.CustomerName = null;
-            table.ReservationTime = null;
+            var response = await Http.PatchAsJsonAsync($"api/tables/{table.Id}/status", new { status = (int)newStatus });
+            if (response.IsSuccessStatusCode)
+            {
+                table.Status = newStatus;
+                if (newStatus == TableStatus.Available)
+                {
+                    table.CurrentReservationId = null;
+                    table.CustomerName = null;
+                    table.ReservationTime = null;
+                }
+                StateHasChanged();
+            }
         }
-
-        StateHasChanged();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            // Fallback - промени локално
+            table.Status = newStatus;
+            StateHasChanged();
+        }
     }
 
-    private void SeatReservation(WaiterTableViewModel table)
+    private async Task SeatReservation(TableDto table)
     {
-        table.Status = TableStatus.Occupied;
-        StateHasChanged();
+        try
+        {
+            var response = await Http.PostAsync($"api/tables/{table.Id}/seat", null);
+            if (response.IsSuccessStatusCode)
+            {
+                table.Status = TableStatus.Occupied;
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            table.Status = TableStatus.Occupied;
+            StateHasChanged();
+        }
     }
 
-    private void CancelReservation(WaiterTableViewModel table)
+    private async Task CancelReservation(TableDto table)
     {
-        table.Status = TableStatus.Available;
-        table.ReservationId = null;
-        table.CustomerName = null;
-        table.ReservationTime = null;
-        StateHasChanged();
+        try
+        {
+            var response = await Http.PostAsync($"api/tables/{table.Id}/release", null);
+            if (response.IsSuccessStatusCode)
+            {
+                table.Status = TableStatus.Available;
+                table.CurrentReservationId = null;
+                table.CustomerName = null;
+                table.ReservationTime = null;
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            table.Status = TableStatus.Available;
+            StateHasChanged();
+        }
     }
 
-    private string GetTableCardClass(WaiterTableViewModel table)
+    private string GetTableCardClass(TableDto table)
     {
         var classes = new List<string>();
 
@@ -104,30 +165,18 @@ public partial class WaiterTableManagement : ComponentBase
         _ => "Unknown"
     };
 
-    // Mock Data
-    private static List<WaiterTableViewModel> GetMockTables() => new()
+    // Mock Data (fallback)
+    private static List<TableDto> GetMockTables() => new()
     {
-        new() { Id = Guid.NewGuid(), TableNumber = 1, Capacity = 2, Status = TableStatus.Available, IsActive = true },
-        new() { Id = Guid.NewGuid(), TableNumber = 2, Capacity = 4, Status = TableStatus.Occupied, IsActive = true },
-        new() { Id = Guid.NewGuid(), TableNumber = 3, Capacity = 4, Status = TableStatus.Available, IsActive = true },
-        new() { Id = Guid.NewGuid(), TableNumber = 4, Capacity = 6, Status = TableStatus.Reserved, IsActive = true },
-        new() { Id = Guid.NewGuid(), TableNumber = 5, Capacity = 2, Status = TableStatus.Available, IsActive = true },
-        new() { Id = Guid.NewGuid(), TableNumber = 6, Capacity = 8, Status = TableStatus.Occupied, IsActive = true, ReservationId = Guid.NewGuid(), CustomerName = "Ivan Petrov", ReservationTime = new TimeSpan(19, 0, 0) },
-        new() { Id = Guid.NewGuid(), TableNumber = 7, Capacity = 4, Status = TableStatus.Available, IsActive = false },
-        new() { Id = Guid.NewGuid(), TableNumber = 8, Capacity = 4, Status = TableStatus.Reserved, IsActive = true, ReservationId = Guid.NewGuid(), CustomerName = "Maria Georgieva", ReservationTime = new TimeSpan(20, 30, 0) },
-        new() { Id = Guid.NewGuid(), TableNumber = 9, Capacity = 6, Status = TableStatus.Available, IsActive = true },
-        new() { Id = Guid.NewGuid(), TableNumber = 10, Capacity = 10, Status = TableStatus.Occupied, IsActive = true },
+        new() { Id = 1, VenueId = 2, TableNumber = 1, Capacity = 2, Status = TableStatus.Available, IsActive = true },
+        new() { Id = 2, VenueId = 2, TableNumber = 2, Capacity = 4, Status = TableStatus.Occupied, IsActive = true },
+        new() { Id = 3, VenueId = 2, TableNumber = 3, Capacity = 4, Status = TableStatus.Available, IsActive = true },
+        new() { Id = 4, VenueId = 2, TableNumber = 4, Capacity = 6, Status = TableStatus.Reserved, IsActive = true },
+        new() { Id = 5, VenueId = 2, TableNumber = 5, Capacity = 2, Status = TableStatus.Available, IsActive = true },
+        new() { Id = 6, VenueId = 2, TableNumber = 6, Capacity = 8, Status = TableStatus.Occupied, IsActive = true, CustomerName = "Ivan Petrov" },
+        new() { Id = 7, VenueId = 2, TableNumber = 7, Capacity = 4, Status = TableStatus.Available, IsActive = false },
+        new() { Id = 8, VenueId = 2, TableNumber = 8, Capacity = 4, Status = TableStatus.Reserved, IsActive = true, CustomerName = "Maria Georgieva" },
+        new() { Id = 9, VenueId = 2, TableNumber = 9, Capacity = 6, Status = TableStatus.Available, IsActive = true },
+        new() { Id = 10, VenueId = 2, TableNumber = 10, Capacity = 10, Status = TableStatus.Occupied, IsActive = true },
     };
-}
-
-public class WaiterTableViewModel
-{
-    public Guid Id { get; set; }
-    public int TableNumber { get; set; }
-    public int Capacity { get; set; }
-    public TableStatus Status { get; set; }
-    public bool IsActive { get; set; }
-    public Guid? ReservationId { get; set; }
-    public string? CustomerName { get; set; }
-    public TimeSpan? ReservationTime { get; set; }
 }

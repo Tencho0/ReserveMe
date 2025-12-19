@@ -1,6 +1,7 @@
 @page "/waiter/tables"
 @namespace ReserveMe.Pages.Waiter
-@using ReserveMe.Pages.Owner
+@using Shared.Enums
+@using Shared.Dtos
 
 <PageTitle>Tables - Waiter</PageTitle>
 
@@ -72,52 +73,64 @@
         </div>
     </div>
 
-    @* Tables Grid *@
-    <div class="row g-3">
-        @foreach (var table in FilteredTables)
-        {
-            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                <div class="card table-card @GetTableCardClass(table)"
-                     @onclick="() => SelectTable(table)"
-                     style="cursor: pointer;">
-                    <div class="card-body text-center p-3">
-                        <div class="position-relative d-inline-block">
-                            <i class="bi bi-table fs-1" style="color: @GetStatusColor(table.Status);"></i>
-                            @if (table.Status == TableStatus.Reserved && table.ReservationId.HasValue)
+    @* Loading *@
+    @if (_isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* Tables Grid *@
+        <div class="row g-3">
+            @foreach (var table in FilteredTables)
+            {
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <div class="card table-card @GetTableCardClass(table)"
+                         @onclick="() => SelectTable(table)"
+                         style="cursor: pointer;">
+                        <div class="card-body text-center p-3">
+                            <div class="position-relative d-inline-block">
+                                <i class="bi bi-table fs-1" style="color: @GetStatusColor(table.Status);"></i>
+                                @if (table.Status == TableStatus.Reserved && table.CurrentReservationId.HasValue)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </span>
+                                }
+                            </div>
+                            <h6 class="mt-2 mb-1">Table #@table.TableNumber</h6>
+                            <span class="badge @GetStatusBadgeClass(table.Status)">
+                                @GetStatusText(table.Status)
+                            </span>
+                            <div class="mt-2 text-muted small">
+                                <i class="bi bi-person"></i> @table.Capacity seats
+                            </div>
+                            @if (!table.IsActive)
                             {
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-                                    <i class="bi bi-calendar-event"></i>
-                                </span>
+                                <span class="badge bg-secondary mt-1">Inactive</span>
                             }
                         </div>
-                        <h6 class="mt-2 mb-1">Table #@table.TableNumber</h6>
-                        <span class="badge @GetStatusBadgeClass(table.Status)">
-                            @GetStatusText(table.Status)
-                        </span>
-                        <div class="mt-2 text-muted small">
-                            <i class="bi bi-person"></i> @table.Capacity seats
-                        </div>
-                        @if (!table.IsActive)
-                        {
-                            <span class="badge bg-secondary mt-1">Inactive</span>
-                        }
                     </div>
                 </div>
-            </div>
-        }
+            }
 
-        @if (!FilteredTables.Any())
-        {
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-table fs-1 text-muted"></i>
-                        <h5 class="mt-3 text-muted">No tables with this status</h5>
+            @if (!FilteredTables.Any())
+            {
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-table fs-1 text-muted"></i>
+                            <h5 class="mt-3 text-muted">No tables with this status</h5>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
 
 @* Details Offcanvas *@
@@ -150,11 +163,11 @@
                         @(_selectedTable.IsActive ? "Yes" : "No")
                     </span>
                 </li>
-                @if (_selectedTable.ReservationId.HasValue)
+                @if (_selectedTable.CurrentReservationId.HasValue)
                 {
                     <li class="list-group-item d-flex justify-content-between">
                         <span><i class="bi bi-calendar-event me-2"></i>Reservation</span>
-                        <strong>#@_selectedTable.ReservationId.Value.ToString().Substring(0, 8)...</strong>
+                        <strong>#@_selectedTable.CurrentReservationId</strong>
                     </li>
                     @if (!string.IsNullOrEmpty(_selectedTable.CustomerName))
                     {
@@ -167,7 +180,7 @@
                     {
                         <li class="list-group-item d-flex justify-content-between">
                             <span><i class="bi bi-clock me-2"></i>Time</span>
-                            <strong>@_selectedTable.ReservationTime.Value.ToString(@"hh\:mm")</strong>
+                            <strong>@_selectedTable.ReservationTime.Value.ToString("HH:mm")</strong>
                         </li>
                     }
                 }
@@ -184,7 +197,7 @@
                 }
                 @if (_selectedTable.Status == TableStatus.Occupied)
                 {
-                    <button class="btn btn-success" @onclick="() => ChangeTableStatus(_selectedTable, TableStatus.Available)">
+                    <button class="btn btn-success" @onclick="() => CancelReservation(_selectedTable)">
                         <i class="bi bi-check-circle me-1"></i> Release Table
                     </button>
                 }
