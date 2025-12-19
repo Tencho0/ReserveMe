@@ -47,7 +47,7 @@
                                placeholder="Search venues by name..."
                                @bind="_searchTerm"
                                @bind:event="oninput"
-                               @onkeyup="OnSearchChanged" />
+                               @onkeyup="@(async () => await OnSearchChanged())" />
                         @if (!string.IsNullOrEmpty(_searchTerm))
                         {
                             <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
@@ -66,9 +66,9 @@
                 <div class="col-md-3">
                     <button class="btn btn-outline-primary w-100" @onclick="ToggleFilterModal">
                         <i class="bi bi-funnel me-1"></i> Filters
-                        @if (_selectedTypes.Any())
+                        @if (_selectedTypeIds.Any())
                         {
-                            <span class="badge bg-primary ms-1">@_selectedTypes.Count</span>
+                            <span class="badge bg-primary ms-1">@_selectedTypeIds.Count</span>
                         }
                     </button>
                 </div>
@@ -76,18 +76,27 @@
         </div>
     </div>
 
+    @* Error message *@
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @_errorMessage
+            <button type="button" class="btn-close" @onclick="() => _errorMessage = null"></button>
+        </div>
+    }
+
     @* Active filters *@
-    @if (_selectedTypes.Any())
+    @if (_selectedTypeIds.Any())
     {
         <div class="mb-4">
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                @foreach (var type in _selectedTypes)
+                @foreach (var typeId in _selectedTypeIds)
                 {
                     <span class="badge bg-primary d-flex align-items-center">
-                        @GetVenueTypeIcon(type) @GetVenueTypeName(type)
+                        @GetVenueTypeIcon(typeId) @GetVenueTypeName(typeId)
                         <button type="button" class="btn-close btn-close-white ms-2" 
                                 style="font-size: 0.6rem;" 
-                                @onclick="() => RemoveTypeFilter(type)"></button>
+                                @onclick="() => RemoveTypeFilter(typeId)"></button>
                     </span>
                 }
                 <button class="btn btn-link btn-sm text-danger p-0" @onclick="ClearAllFilters">
@@ -121,7 +130,7 @@
     {
         @* Results count *@
         <p class="text-muted mb-4">
-            Found <strong>@_filteredVenues.Count()</strong> venues within @_selectedRadius km
+            Found <strong>@_totalCount</strong> venues within @_selectedRadius km
         </p>
 
         @* Venue cards grid *@
@@ -151,7 +160,7 @@
                             
                             @* Venue type *@
                             <span class="badge venue-type-badge">
-                                @GetVenueTypeIcon(venue.Type) @GetVenueTypeName(venue.Type)
+                                @GetVenueTypeIcon(venue.VenueTypeId) @GetVenueTypeName(venue.VenueTypeId)
                             </span>
                         </div>
 
@@ -227,11 +236,11 @@
                 <div class="modal-body">
                     <h6 class="mb-3">Venue type</h6>
                     <div class="d-flex flex-wrap gap-2">
-                        @foreach (var type in Enum.GetValues<VenueType>())
+                        @foreach (var type in _venueTypes)
                         {
-                            <button class="btn @(_selectedTypes.Contains(type) ? "btn-primary" : "btn-outline-secondary")"
-                                    @onclick="() => ToggleTypeFilter(type)">
-                                @GetVenueTypeIcon(type) @GetVenueTypeName(type)
+                            <button class="btn @(_selectedTypeIds.Contains(type.Id) ? "btn-primary" : "btn-outline-secondary")"
+                                    @onclick="() => ToggleTypeFilter(type.Id)">
+                                @GetVenueTypeIcon(type.Id) @type.Name
                             </button>
                         }
                     </div>

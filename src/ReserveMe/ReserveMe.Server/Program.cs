@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ReserveMe.Server.Interfaces;
+using ReserveMe.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<ITableService, TableService>();
+builder.Services.AddScoped<IVenueService, VenueService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
