@@ -59,6 +59,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<ITableService, TableService>();
+builder.Services.AddScoped<IVenueService, VenueService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

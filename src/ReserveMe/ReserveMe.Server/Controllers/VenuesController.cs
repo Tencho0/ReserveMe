@@ -1,51 +1,138 @@
-﻿namespace ReserveMe.Server.Controllers
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Shared.Dtos;
+using ReserveMe.Server.Interfaces;
+
+namespace ReserveMe.Server.Controllers
 {
-	using Application.Venues.Commands;
-	using Application.Venues.Queries;
-	using Microsoft.AspNetCore.Authorization;
-	using Microsoft.AspNetCore.Mvc;
-	using Shared.Dtos.Venues;
-	using Shared.Requests.Venues;
+    [ApiController]
+    [Route("api/[controller]")]
+    public class VenuesController : ControllerBase
+    {
+        private readonly IVenueService _venueService;
 
-	[Authorize]
-	public class VenuesController : ApiControllerBase
-	{
-		#region READ
+        public VenuesController(IVenueService venueService)
+        {
+            _venueService = venueService;
+        }
 
-		[HttpGet("getAll")]
-		public async Task<ActionResult<List<VenueAdminDto>>> GetVenues()
-		{
-			return await Mediator.Send(new GetVenuesQuery());
-		}
+        /// <summary>
+        /// Search venues with filters
+        /// </summary>
+        [HttpGet("search")]
+        public async Task<ActionResult<VenueSearchResultDto>> SearchVenues(
+            [FromQuery] double? latitude,
+            [FromQuery] double? longitude,
+            [FromQuery] int radiusKm = 5,
+            [FromQuery] string? search = null,
+            [FromQuery] List<int>? typeIds = null,
+            [FromQuery] string sortBy = "rating",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 6)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-		#endregion
+            var request = new VenueSearchRequestDto
+            {
+                UserLatitude = latitude,
+                UserLongitude = longitude,
+                RadiusKm = radiusKm,
+                SearchTerm = search,
+                VenueTypeIds = typeIds,
+                SortBy = sortBy,
+                Page = page,
+                PageSize = pageSize
+            };
 
-		#region CREATE
+            var result = await _venueService.SearchVenuesAsync(request, userId);
+            return Ok(result);
+        }
 
-		[HttpPost("create")]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesDefaultResponseType]
-		public async Task<IActionResult> CreateVenue(SaveVenueRequest venue)
-		{
-			await Mediator.Send(new CreateVenueCommand(venue));
+        /// <summary>
+        /// Get all venues (simple list)
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<VenueSearchResultDto>> GetAllVenues(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-			return NoContent();
-		}
+            var request = new VenueSearchRequestDto
+            {
+                RadiusKm = 1000, // Large radius to get all
+                Page = page,
+                PageSize = pageSize
+            };
 
-		#endregion
+            var result = await _venueService.SearchVenuesAsync(request, userId);
+            return Ok(result);
+        }
 
-		#region DELETE
-		[HttpDelete("delete")]
-		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		[ProducesDefaultResponseType]
-		public async Task<IActionResult> DeleteVenue(DeleteVenueRequest request)
-		{
-			await Mediator.Send(new DeleteVenueCommand(request.VenueId));
+        /// <summary>
+        /// Get venue by ID
+        /// </summary>
+        [HttpGet("{venueId:int}")]
+        public async Task<ActionResult<VenueDetailDto>> GetVenue(int venueId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-			return NoContent();
-		}
-		#endregion
-	}
+            var venue = await _venueService.GetVenueByIdAsync(venueId, userId);
+            if (venue == null)
+                return NotFound();
+
+            return Ok(venue);
+        }
+
+        /// <summary>
+        /// Get all venue types
+        /// </summary>
+        [HttpGet("types")]
+        public async Task<ActionResult<IEnumerable<VenueTypeDto>>> GetVenueTypes()
+        {
+            var types = await _venueService.GetVenueTypesAsync();
+            return Ok(types);
+        }
+
+        /// <summary>
+        /// Create new venue
+        /// </summary>
+        [HttpPost]
+        public async Task<ActionResult<VenueSearchDto>> CreateVenue([FromBody] CreateVenueDto dto)
+        {
+            var venue = await _venueService.CreateVenueAsync(dto);
+            return CreatedAtAction(nameof(GetVenue), new { venueId = venue.Id }, venue);
+        }
+
+        /// <summary>
+        /// Toggle venue favorite status
+        /// </summary>
+        [HttpPost("{venueId:int}/favorite")]
+        [Authorize]
+        public async Task<ActionResult<object>> ToggleFavorite(int venueId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var isFavorite = await _venueService.ToggleFavoriteAsync(venueId, userId);
+            return Ok(new { isFavorite });
+        }
+
+        /// <summary>
+        /// Get user's favorite venues
+        /// </summary>
+        [HttpGet("favorites")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<VenueSearchDto>>> GetFavorites()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var favorites = await _venueService.GetFavoriteVenuesAsync(userId);
+            return Ok(favorites);
+        }
+    }
 }
