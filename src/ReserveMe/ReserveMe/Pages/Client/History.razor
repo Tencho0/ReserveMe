@@ -1,0 +1,65 @@
+﻿@page "/history"
+
+<link href="css/pageStyle.css" rel="stylesheet" />
+<link href="css/historyCSS.css" rel="stylesheet" />
+
+<div class="page-wrapper">
+    <div class="page-logo">
+        <img src="images/ReserveMe_logo.png" alt="Logo" />
+    </div>
+
+    <div class="reservation-card">
+        <header class="page-header">
+            <h1>История на резервациите</h1>
+            <p>Виж всички свои минали и предстоящи резервации.</p>
+        </header>
+
+        <div class="reservation-list">
+            @if (Reservations == null)
+            {
+                <p>Зареждане...</p>
+            }
+            else if (!Reservations.Any())
+            {
+                <p>Няма резервации.</p>
+            }
+            else
+            {
+                @foreach (var r in Reservations)
+                {
+                    <a class="reservation-card" @onclick="() => OpenReservation(r.Id)">
+                        <div class="reservation-main">
+                            <div class="reservation-logo">
+                                <div class="logo-fallback">@r.LogoFallback</div>
+                            </div>
+
+                            <div class="reservation-content">
+                                <div class="reservation-header-row">
+                                    <h2 class="restaurant-name">@r.RestaurantName</h2>
+                                    <span class="reservation-number">@r.Number</span>
+                                </div>
+
+                                <div class="reservation-meta">
+                                    <span class="reservation-date">Дата: @r.Date.ToString("dd.MM.yyyy, HH:mm")</span>
+                                    <span class="reservation-status">@r.Status</span>
+                                </div>
+                            </div>
+
+                            <div class="reservation-qr">
+                                <div class="qr-code">
+                                    <span>@r.QrCodeText</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reservation-address">
+                            <span class="address-label">Адрес:</span>
+                            <span class="address-text">@r.Address</span>
+                        </div>
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</div>
+

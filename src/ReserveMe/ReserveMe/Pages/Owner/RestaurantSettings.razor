@@ -1,0 +1,55 @@
+﻿@page "/restaurantSettings"
+<link href="css/pageStyle.css" rel="stylesheet" />
+<link href="css/restaurantSettings.css" rel="stylesheet" />
+
+<div class="page-wrapper">
+    <div class="page-logo">
+        <img src="images/ReserveMe_logo.png" alt="Logo" />
+    </div>
+
+    <div class="settings-card">
+        <h2 class="section-title">Настройки на заведението</h2>
+        
+        <div class="input-group">
+            <label>Географски координати</label>
+            <div class="input-row">
+                <input type="text" placeholder="Latitude (ширина)" @bind="Coordinates.Latitude" @bind:event="oninput" />
+                <input type="text" placeholder="Longitude (дължина)" @bind="Coordinates.Longitude" @bind:event="oninput" />
+            </div>
+        </div>
+
+        <div class="work-section">
+            <label class="section-title">Работно време</label>
+            <div class="working-hours">
+                @foreach (var day in WorkingDays)
+                {
+                    <div class="working-day" id="@day.DayName.ToLower()">
+                        <div class="day-label">@day.DisplayName</div>
+                        <div class="day-controls">
+                            <label class="switch">
+                                <input type="checkbox" @bind="day.IsEnabled" />
+                                <span class="slider"></span>
+                            </label>
+                            <div class="time-inputs">
+                                <input type="time" @bind="day.OpeningTime" disabled="@(!day.IsEnabled)" />
+
+                                <input type="time" @bind="day.ClosingTime" disabled="@(!day.IsEnabled)" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div>
+            <label class="section-title">Анализ</label>
+            <div class="analysis-box">
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn-cancel" onclick="@OnCancel">Отказ</button>
+            <button type="button" class="btn-save" onclick="@OnSave">Запази промените</button>
+        </div>
+    </div>
+</div>
