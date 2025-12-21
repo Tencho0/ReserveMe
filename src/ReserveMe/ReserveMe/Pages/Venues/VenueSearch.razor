@@ -1,0 +1,342 @@
+@page "/"
+@page "/search"
+@namespace ReserveMe.Pages.Venues
+
+<PageTitle>Find venues - ReserveMe</PageTitle>
+
+<div class="container py-4">
+
+    @* Location and radius *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-geo-alt-fill text-primary fs-4 me-2"></i>
+                        <div>
+                            <small class="text-muted">Current location</small>
+                            <div class="fw-medium">@_currentLocation</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <i class="bi bi-bullseye text-muted me-2"></i>
+                        <select class="form-select" style="width: 120px;" @bind="_selectedRadius" @bind:after="OnFilterChanged">
+                            <option value="1">1 km</option>
+                            <option value="3">3 km</option>
+                            <option value="5">5 km</option>
+                            <option value="10">10 km</option>
+                            <option value="20">20 km</option>
+                            @* <option value="200">200 km</option> *@ @* Test purposes only *@
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Search and filters *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Search venues by name..."
+                               @bind="_searchTerm"
+                               @bind:event="oninput"
+                               @onkeyup="@(async () => OnSearchChanged())" />
+                        @if (!string.IsNullOrEmpty(_searchTerm))
+                        {
+                            <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" @bind="_sortBy" @bind:after="OnFilterChanged">
+                        <option value="@SortOption.Rating">Sort by rating</option>
+                        @* <option value="@SortOption.Distance">Sort by distance</option> *@
+                        <option value="@SortOption.Reservations">Sort by reservations</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-outline-primary w-100" @onclick="ToggleFilterModal">
+                        <i class="bi bi-funnel me-1"></i> Filters
+                        @if (_selectedTypeIds.Any())
+                        {
+                            <span class="badge bg-primary ms-1">@_selectedTypeIds.Count</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Error message *@
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @_errorMessage
+            <button type="button" class="btn-close" @onclick="() => _errorMessage = null"></button>
+        </div>
+    }
+
+    @* Active filters *@
+    @if (_selectedTypeIds.Any())
+    {
+        <div class="mb-4">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                @foreach (var typeId in _selectedTypeIds)
+                {
+                    <span class="badge bg-primary d-flex align-items-center">
+                        @GetVenueTypeIcon(typeId) @GetVenueTypeName(typeId)
+                        <button type="button" class="btn-close btn-close-white ms-2"
+                                style="font-size: 0.6rem;"
+                                @onclick="() => RemoveTypeFilter(typeId)"></button>
+                    </span>
+                }
+                <button class="btn btn-link btn-sm text-danger p-0" @onclick="ClearAllFilters">
+                    Clear all
+                </button>
+            </div>
+        </div>
+    }
+
+    @* Results *@
+    @if (_isLoading && !_venues.Any())
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading venues...</p>
+        </div>
+    }
+    else if (!_filteredVenues.Any())
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-search fs-1 text-muted"></i>
+                <h5 class="mt-3 text-muted">No venues found</h5>
+                <p class="text-muted">Try adjusting the filters or the search radius</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @* Results count *@
+        <p class="text-muted mb-4">
+            Found <strong>@_totalCount</strong> venues within @_selectedRadius km
+        </p>
+
+        @* Venue cards grid *@
+        <div class="row g-4">
+            @foreach (var venue in _filteredVenues)
+            {
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <div class="card venue-card h-100">
+                        @* Image *@
+                        <div class="venue-image-container">
+                            <img src="@venue.ImageUrl"
+                                 class="card-img-top venue-image"
+                                 alt="@venue.Name" />
+
+                            @* Logo *@
+                            @if (!string.IsNullOrEmpty(venue.LogoUrl))
+                            {
+                                Console.WriteLine(venue.LogoUrl);
+                                <div class="venue-logo">
+                                    <img src="@venue.LogoUrl" alt="@venue.Name Logo" />
+                                </div>
+                            }
+
+                            @* Favorite button *@
+                            <button class="btn btn-light btn-sm favorite-btn" @onclick="() => ToggleFavorite(venue)">
+                                <i class="bi @(@* venue.IsFavorite ? "bi-heart-fill text-danger" : *@ "bi-heart")"></i>
+                            </button>
+
+                            @* Venue type *@
+                            <span class="badge venue-type-badge">
+                                @GetVenueTypeIcon(venue.VenueTypeId) @GetVenueTypeName(venue.VenueTypeId)
+                            </span>
+                        </div>
+
+                        <div class="card-body">
+                            @* Name and rating *@
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title venue-name mb-0">@venue.Name</h5>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    <span class="fw-medium">@(venue.Rating?.ToString("0.0") ?? "No reviews yet")</span>
+                                    <small class="text-muted ms-1">(@venue.ReviewCount)</small>
+                                </div>
+                            </div>
+
+                            @* Address *@
+                            @* <p class="card-text text-muted small mb-2">
+                                <i class="bi bi-geo-alt me-1"></i>@venue.Address
+                            </p> *@
+
+                            @* Distance and reservations *@
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary-subtle text-primary">
+                                    <i class="bi bi-signpost-2 me-1"></i>@FormatDistance(venue)
+                                </span>
+                                <small class="text-muted">@venue.TotalReservations reservations</small>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 pt-0">
+                            <a href="/venue/@venue.Id" class="btn btn-primary w-100">
+                                View details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Load more *@
+        @if (_hasMore)
+        {
+            <div class="text-center py-4">
+                @if (_isLoadingMore)
+                {
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2">Loading...</span>
+                }
+                else
+                {
+                    <button class="btn btn-outline-primary" @onclick="LoadMore">
+                        <i class="bi bi-arrow-down-circle me-1"></i> Load more venues
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>
+
+@* Filter modal *@
+@if (_filterModalOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-funnel me-2"></i>Filters
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="ToggleFilterModal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="mb-3">Venue type</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var type in _venueTypes)
+                        {
+                            <button class="btn @(_selectedTypeIds.Contains(type.Id) ? "btn-primary" : "btn-outline-secondary")"
+                                    @onclick="() => ToggleTypeFilter(type.Id)">
+                                @GetVenueTypeIcon(type.Id) @type.Name
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ClearAllFilters">
+                        Clear
+                    </button>
+                    <button type="button" class="btn btn-primary" @onclick="ApplyFilters">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .venue-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+
+        .venue-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+        }
+
+    .venue-image-container {
+        position: relative;
+        height: 180px;
+        overflow: hidden;
+    }
+
+    .venue-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .favorite-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .venue-type-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        font-size: 0.75rem;
+    }
+
+    .venue-logo {
+        position: absolute;
+        bottom: 5px;
+        left: 15px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        overflow: hidden;
+        background: white;
+    }
+
+        .venue-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .venue-card .card-body {
+        padding-top: 30px;
+    }
+
+    .venue-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 180px;
+    }
+
+    .bg-primary-subtle {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+    }
+</style>

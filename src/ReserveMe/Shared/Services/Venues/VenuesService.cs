@@ -31,6 +31,20 @@
 			}
 		}
 
+		public async Task<List<VenueSearchDto>> GetVenuesForClient()
+		{
+			try
+			{
+				var result = await _provider.GetAsync<List<VenueSearchDto>>(Endpoints.GetVenuesForClient, null, null);
+
+				return result;
+			}
+			catch (Exception ex)
+			{
+				return new List<VenueSearchDto>();
+			}
+		}
+
 		#endregion
 
 		#region POST

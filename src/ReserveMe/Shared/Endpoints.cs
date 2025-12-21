@@ -24,6 +24,8 @@
 
 		public static string GetVenues = $"{BaseAddressApi}venues/getAll";
 
+		public static string GetVenuesForClient = $"{BaseAddressApi}venues/getVenuesForClient";
+
 		public static string CreateVenue = $"{BaseAddressApi}venues/create";
 
 		public static string DeleteVenue = $"{BaseAddressApi}venues/delete";
