@@ -47,7 +47,7 @@
                                placeholder="Search venues by name..."
                                @bind="_searchTerm"
                                @bind:event="oninput"
-                               @onkeyup="@(async () => await OnSearchChanged())" />
+                               @onkeyup="@(async () => OnSearchChanged())" />
                         @if (!string.IsNullOrEmpty(_searchTerm))
                         {
                             <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
@@ -59,7 +59,7 @@
                 <div class="col-md-4">
                     <select class="form-select" @bind="_sortBy" @bind:after="OnFilterChanged">
                         <option value="@SortOption.Rating">Sort by rating</option>
-                        <option value="@SortOption.Distance">Sort by distance</option>
+                        @* <option value="@SortOption.Distance">Sort by distance</option> *@
                         <option value="@SortOption.Reservations">Sort by reservations</option>
                     </select>
                 </div>
