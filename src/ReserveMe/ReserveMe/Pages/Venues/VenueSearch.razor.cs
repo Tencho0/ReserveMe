@@ -70,17 +70,15 @@ public partial class VenueSearch : ComponentBase
 	{
 		if (!firstRender) return;
 
-		Console.WriteLine("Before catch");
 		try
 		{
-			Console.WriteLine("Before Location call");
 			var pos = await jsRuntime.InvokeAsync<GeoPos>("reserveMeGeo.getCurrentPosition", new
 			{
 				enableHighAccuracy = true,
 				timeout = 10000,
 				maximumAge = 60000
 			});
-			Console.WriteLine("after Location call: " + pos.lat + " " + pos.lon);
+
 			_userLatitude = pos.lat;
 			_userLongitude = pos.lon;
 			_currentLocation = "Near you";
@@ -90,7 +88,6 @@ public partial class VenueSearch : ComponentBase
 		}
 		catch (JSException ex)
 		{
-			Console.WriteLine("error in catch: " + ex.Message);
 			_errorMessage = "We couldn't access your location. Showing results for the default area.";
 			StateHasChanged();
 		}
