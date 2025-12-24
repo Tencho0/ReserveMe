@@ -18,6 +18,8 @@
 
 		public static string GetUserByName = $"{BaseAddressApi}users/getUserByName";
 
+		public static string GetUserById = $"{BaseAddressApi}users/getuserbyid";
+
 		#endregion
 
 		#region Venues

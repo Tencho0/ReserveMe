@@ -5,5 +5,7 @@
 	public interface IUserService
 	{
 		Task<UserDto> GetByNameAsync(string username);
+
+		Task<UserDto> GetByIdAsync(string id);
 	}
 }
