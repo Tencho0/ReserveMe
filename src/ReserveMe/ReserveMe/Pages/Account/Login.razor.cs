@@ -20,11 +20,11 @@
 
 			if (!string.IsNullOrEmpty(result))
 			{
-				navManager?.NavigateTo("/");
+				navManager?.NavigateTo("/", forceLoad: true);
 			}
 			else
 			{
-				navManager?.NavigateTo("/401");
+				navManager?.NavigateTo("/401", forceLoad: true);
 			}
 		}
 	}
