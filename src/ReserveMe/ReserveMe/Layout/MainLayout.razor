@@ -1,4 +1,9 @@
 ﻿@inherits LayoutComponentBase
+
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -28,17 +33,17 @@
 
 @code
 {
-    @using Shared.Helpers
- 
-    [Inject]
-    private IAuthenticationHelper? _authHelper { get; set; }
+@using Shared.Helpers
 
     [Inject]
-    private NavigationManager? navManager { get; set; }
+private IAuthenticationHelper? _authHelper { get; set; }
 
-    private async Task Logout()
-    {
-        await _authHelper.LogoutAsync();
-        navManager.NavigateTo("/login", forceLoad: true);
-    }
+[Inject]
+private NavigationManager? navManager { get; set; }
+
+private async Task Logout()
+{
+    await _authHelper.LogoutAsync();
+    navManager.NavigateTo("/login", forceLoad: true);
+}
 }

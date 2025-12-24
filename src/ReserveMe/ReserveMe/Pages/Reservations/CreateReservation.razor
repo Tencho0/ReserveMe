@@ -33,7 +33,8 @@
                     <div class="form-group">
                         <label>Contact person</label>
                         <InputText id="contactName"
-                                   @bind-Value="reservationDto.ContactName"/>
+                                   @bind-Value="reservationDto.ContactName"
+                                   placeholder="Ivan Ivanov" />
                         <span class="text-danger"><ValidationMessage For="@(() => reservationDto.ContactName)" /></span>
                     </div>
 
@@ -55,14 +56,36 @@
                         <span class="text-danger"><ValidationMessage For="@(() => reservationDto.ContactEmail)" /></span>
                     </div>
 
-                    <div class="form-group">
-                        <label>Date &amp; time</label>
-                        <InputDate id="dateTime"
-                                   class="form-control"
-                                   TValue="DateTime?"
-                                   @bind-Value="reservationDto.ReservationTime"
-                                   @bind-Value:format="yyyy-MM-ddTHH:mm" />
-                        <span class="text-danger"><ValidationMessage For="@(() => reservationDto.ReservationTime)" /></span>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label class="group-label">Reservation time</label>
+
+                            <div class="inline-pickers">
+                                <div class="inline-picker">
+                                    <label class="sub-label">Date</label>
+                                    <MudDatePicker @bind-Date="ReservationDate"
+                                                   Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense"
+                                                   Dense="true"
+                                                   DateFormat="yyyy-MM-dd"
+                                                   Class="compact-field small-picker" />
+                                </div>
+
+                                <div class="inline-picker">
+                                    <label class="sub-label">Time</label>
+                                    <MudTimePicker @bind-Time="ReservationTime"
+                                                   Variant="Variant.Outlined"
+                                                   Margin="Margin.Dense"
+                                                   Dense="true"
+                                                   AmPm="false"
+                                                   TimeFormat="HH:mm"
+                                                   Class="compact-field small-picker" />
+                                    <span class="text-danger">
+                                        <ValidationMessage For="@(() => reservationDto.ReservationTime)" />
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -105,9 +128,16 @@
                         <li><span>Contact:</span> <strong>@(reservationDto.ContactName ?? "—")</strong></li>
                         <li><span>Phone:</span> <strong>@(reservationDto.ContactPhone ?? "—")</strong></li>
                         <li><span>Email:</span> <strong>@(reservationDto.ContactEmail ?? "—")</strong></li>
+
                         <li>
                             <span>Date &amp; time:</span>
-                            <strong>@(reservationDto.ReservationTime.HasValue? reservationDto.ReservationTime.Value.ToString("g") : "—")</strong>
+                            <strong>
+                                @(
+                                                                ReservationDate.HasValue && ReservationTime.HasValue
+                                                                ? $"{ReservationDate:yyyy-MM-dd} {ReservationTime:hh\\:mm}"
+                                                                : "—"
+                                                                )
+                            </strong>
                         </li>
                         <li><span>Guests:</span> <strong>@(reservationDto.GuestsCount > 0 ? reservationDto.GuestsCount : "—")</strong></li>
                         @* <li><span>Area:</span> <strong>@AreaLabel(Model.Area)</strong></li> *@
@@ -503,6 +533,76 @@
         background: #ffebee;
         color: #c62828;
         border: 1px solid #ffcdd2;
+    }
+
+    .mud-popover .mud-paper,
+    .mud-popover .mud-picker,
+    .mud-dialog .mud-paper {
+        background-color: #fff !important;
+    }
+
+    .group-label {
+        font-size: 0.95rem;
+        margin-bottom: 6px;
+        color: #444;
+        display: block;
+    }
+
+    .inline-pickers {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .inline-picker {
+        flex: 1 1 220px;
+        min-width: 200px;
+    }
+
+    .sub-label {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .small-picker .mud-input-control-input-container {
+        min-height: 32px;
+    }
+
+    .small-picker .mud-input-slot {
+        padding: 4px 8px;
+        min-height: 32px;
+    }
+
+    .small-picker .mud-input {
+        font-size: 0.9rem;
+    }
+
+    .mud-popover .mud-timepicker .mud-button-root,
+    .mud-dialog .mud-timepicker .mud-button-root {
+        min-width: 28px;
+        height: 28px;
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
+
+    .mud-popover .mud-picker,
+    .mud-dialog .mud-picker {
+        font-size: 0.9rem;
+    }
+
+    .mud-popover .mud-paper,
+    .mud-dialog .mud-paper {
+        padding: 8px 10px;
+    }
+
+    @@media (max-width: 600px) {
+        .inline-pickers {
+            flex-direction: column;
+            gap: 8px;
+        }
     }
 
     @@media (max-width: 900px) {

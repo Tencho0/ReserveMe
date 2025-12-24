@@ -11,6 +11,7 @@ using Shared.Services.VenueTypes;
 using Shared.Services.Media;
 using Shared.Services.Reservations;
 using Shared.Services.Users;
+using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddScoped(sp => new HttpClient
 });
 
 builder.Services.AddBlazoredLocalStorage();
+
+builder.Services.AddMudServices();
 
 // API provider
 builder.Services.AddScoped<IApiProvider, ApiProvider>();

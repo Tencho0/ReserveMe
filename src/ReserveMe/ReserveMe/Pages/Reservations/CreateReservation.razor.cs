@@ -23,6 +23,9 @@ public partial class CreateReservation : ComponentBase
 
 	public string? UserId { get; set; }
 
+	private DateTime? ReservationDate { get; set; }
+	private TimeSpan? ReservationTime { get; set; }
+
 	protected VenueSearchDto currVenue { get; set; } = new();
 
 	protected ReservationDto reservationDto { get; set; } = new();
@@ -32,6 +35,12 @@ public partial class CreateReservation : ComponentBase
 	{
 		reservationCreateContext = new EditContext(reservationDto);
 		currVenue = await _venuesService.GetVenueById(VenueId);
+		
+		if (reservationDto.ReservationTime is not null)
+		{
+			ReservationDate = reservationDto.ReservationTime.Value.Date;
+			ReservationTime = reservationDto.ReservationTime.Value.TimeOfDay;
+		}
 
 		UserId = await _authHelper.GetUserId();
 
@@ -45,7 +54,7 @@ public partial class CreateReservation : ComponentBase
 	{
 		ErrorMessage = null;
 		SuccessMessage = null;
-
+		SyncToDto();
 		try
 		{
 			if (!reservationCreateContext.Validate())
@@ -118,5 +127,16 @@ public partial class CreateReservation : ComponentBase
 		reservationDto = new ReservationDto();
 		reservationCreateContext = new EditContext(reservationDto);
 		StateHasChanged();
+	}
+
+	private void SyncToDto()
+	{
+		if (ReservationDate is null || ReservationTime is null)
+		{
+			reservationDto.ReservationTime = null;
+			return;
+		}
+
+		reservationDto.ReservationTime = ReservationDate.Value.Date + ReservationTime.Value;
 	}
 }
