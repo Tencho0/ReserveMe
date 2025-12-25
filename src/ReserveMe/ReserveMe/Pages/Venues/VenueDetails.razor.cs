@@ -20,7 +20,8 @@
 
 		private VenueSearchDto venue { get; set; }
 
-		private ReviewDto reviewDto = new();
+
+		private ReviewDto reviewDto = new() { Rating = 0 };
 		private EditContext reviewEditContext = default!;
 
 		private bool submitting;
@@ -52,6 +53,8 @@
 				reviewDto.CreatedAt = DateTime.UtcNow;
 				await _reviewsService.CreateReviewAsync(reviewDto);
 
+
+				reviewDto = new ReviewDto { Rating = 0, Comment = string.Empty };
 				ResetReviewForm();
 				submitSuccess = "Thanks for your review!";
 
@@ -64,6 +67,19 @@
 			finally
 			{
 				submitting = false;
+			}
+		}
+
+		private void SetRating(int value)
+		{
+			Console.WriteLine("This is the value of stars:");
+			Console.WriteLine(value);
+			var clamped = Math.Clamp(value, 1, 5);
+			if (reviewDto.Rating != clamped)
+			{
+				reviewDto.Rating = clamped;
+				reviewEditContext?.NotifyFieldChanged(new FieldIdentifier(reviewDto, nameof(reviewDto.Rating)));
+				StateHasChanged();
 			}
 		}
 

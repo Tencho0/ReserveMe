@@ -149,49 +149,53 @@
                     <button class="btn btn-success w-100 mt-8">Make a Reservation</button>
                 </div>
 
-                <div class="card">
-                    <h3 class="card-title">Leave a Review</h3>
+                @if (UserId != null)
+                {
+                    <div class="card">
+                        <h3 class="card-title">Leave a Review</h3>
 
-                    <EditForm EditContext="@reviewEditContext" OnValidSubmit="@SubmitReviewAsync">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
+                        <EditForm EditContext="@reviewEditContext" OnValidSubmit="@SubmitReviewAsync">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
 
-                        <div class="field">
-                            <label class="label">Rating</label>
-                            <InputSelect class="input" @bind-Value="reviewDto.Rating">
-                                @for (var r = 5; r >= 1; r--)
-                                {
-                                    <option value="@r">@r</option>
-                                }
-                            </InputSelect>
-                            <div class="stars">
-                                @for (int i = 1; i <= 5; i++)
-                                {
-                                    var active = i <= reviewDto.Rating ? "star active" : "star";
-                                    <button type="button" class="@active" @onclick="() => reviewDto.Rating = i" aria-label="Rate @i">★</button>
-                                }
+                            <div class="field">
+                                <label class="label">Rating</label>
+                                <div class="stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        var starValue = i;
+                                        var active = starValue <= reviewDto.Rating ? "star active" : "star";
+
+                                        <button type="button"
+                                                class="@active"
+                                                @onclick="@(() => SetRating(starValue))"
+                                                aria-label="Rate @starValue">
+                                            ★
+                                        </button>
+                                    }
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="field">
-                            <label class="label">Your Review</label>
-                            <InputTextArea class="input textarea" @bind-Value="reviewDto.Comment" placeholder="Write your opinion..." />
-                        </div>
+                            <div class="field">
+                                <label class="label">Your Review</label>
+                                <InputTextArea class="input textarea" @bind-Value="reviewDto.Comment" placeholder="Write your opinion..." />
+                            </div>
 
-                        <button class="btn btn-secondary w-100" type="submit" disabled="@submitting">
-                            @(submitting ? "Submitting..." : "Submit")
-                        </button>
+                            <button class="btn btn-secondary w-100" type="submit" disabled="@submitting">
+                                @(submitting ? "Submitting..." : "Submit")
+                            </button>
 
-                        @if (!string.IsNullOrEmpty(submitSuccess))
-                        {
-                            <div class="alert success">@submitSuccess</div>
-                        }
-                        @if (!string.IsNullOrEmpty(submitError))
-                        {
-                            <div class="alert error">@submitError</div>
-                        }
-                    </EditForm>
-                </div>
+                            @if (!string.IsNullOrEmpty(submitSuccess))
+                            {
+                                <div class="alert success">@submitSuccess</div>
+                            }
+                            @if (!string.IsNullOrEmpty(submitError))
+                            {
+                                <div class="alert error">@submitError</div>
+                            }
+                        </EditForm>
+                    </div>
+                }
 
                 <!-- Optional: latest reviews preview -->
                 @*   @if (recentReviews?.Count > 0)
@@ -213,15 +217,6 @@
             </section>
         </main>
     </div>
-}
-
-@code { static string GetInitials(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) return "—";
-        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpperInvariant();
-        return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpperInvariant();
-}
 }
 
 <style>
@@ -612,4 +607,35 @@
             padding-right: 12px;
         }
     }
+
+    .stars {
+        display: flex;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    .star {
+        background: #fff;
+        border: 1px solid var(--border);
+        color: #c9ccd3; /* inactive star color */
+        border-radius: 8px;
+        padding: 4px 8px;
+        cursor: pointer;
+        transition: filter .2s ease, transform .06s ease, color .2s ease, border-color .2s ease, background .2s ease;
+    }
+
+        .star:hover {
+            filter: brightness(0.95);
+        }
+
+        .star:active {
+            transform: translateY(1px);
+        }
+
+        /* active star (gold) */
+        .star.active {
+            color: #f59e0b; /* gold */
+            border-color: #fcd34d;
+            background: #fff7ed; /* light amber background */
+        }
 </style>
