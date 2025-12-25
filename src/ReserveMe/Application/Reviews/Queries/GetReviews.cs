@@ -36,6 +36,7 @@
 					CreatedAt = v.CreatedAt,
 					Comment = v.Comment,
 				})
+				.OrderByDescending(x => x.CreatedAt)
 				.ToListAsync(cancellationToken);
 
 			return result;
