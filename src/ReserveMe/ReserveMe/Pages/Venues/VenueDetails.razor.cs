@@ -72,8 +72,6 @@
 
 		private void SetRating(int value)
 		{
-			Console.WriteLine("This is the value of stars:");
-			Console.WriteLine(value);
 			var clamped = Math.Clamp(value, 1, 5);
 			if (reviewDto.Rating != clamped)
 			{
