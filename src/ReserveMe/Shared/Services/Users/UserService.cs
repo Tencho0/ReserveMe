@@ -57,5 +57,27 @@
 				return new UserDto();
 			}
 		}
+
+		public async Task<UserDto> GetByIdAsync(string id)
+		{
+			try
+			{
+				Dictionary<string, object> queryParams = new Dictionary<string, object>()
+				{
+					{"id", id},
+				};
+
+				var result = await _provider.GetAsync<UserDto>(Endpoints.GetUserById, null, queryParams);
+
+				return result;
+			}
+			catch (Exception ex)
+			{
+				//TODO: Log error
+				//_logger.LogError(ex.Message);
+
+				return new UserDto();
+			}
+		}
 	}
 }

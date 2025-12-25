@@ -5,24 +5,110 @@
 <MudSnackbarProvider />
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+
+    <AuthorizeView Roles="SuperAdmin, Owner, Waiter">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    </AuthorizeView>
 
     <main>
         <div class="top-row px-4">
-            <span class="ms-auto">
+            <ul class="header-content-right" role="toolbar" aria-label="Header actions">
                 <AuthorizeView>
                     <Authorized>
-                        <button class="btn btn-link" @onclick="Logout">
-                            Logout
-                        </button>
+                        @if (UserDetails is not null)
+                        {
+                            <li class="header-element country-selector dropdown">
+
+                                <a href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-auto-close="outside" data-bs-toggle="dropdown">
+                                    <span class="avatar avatar-rounded avatar-xs lh-1 me-2" aria-hidden="true">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             width="20" height="20" viewBox="0 0 60 30" role="img" aria-label="United Kingdom"
+                                             style="display:block">
+                                            <clipPath id="s"><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+                                            <clipPath id="t"><path d="M30,15 h30 v15 z v-30 z h-30 z" /></clipPath>
+                                            <g clip-path="url(#s)">
+                                                <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
+                                                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6" />
+                                                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4" clip-path="url(#t)" />
+                                                <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10" />
+                                                <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6" />
+                                            </g>
+                                        </svg>
+                                    </span>
+                                    English
+                                </a>
+
+                                <ul class="main-header-dropdown dropdown-menu dropdown-menu-end" data-bs-auto-close="true" data-popper-placement="none">
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" style="cursor: pointer">
+                                            <span class="avatar avatar-rounded avatar-xs lh-1 me-2" aria-hidden="true">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                     width="20" height="20" viewBox="0 0 60 30" role="img" aria-label="United Kingdom"
+                                                     style="display:block">
+                                                    <clipPath id="s"><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+                                                    <clipPath id="t"><path d="M30,15 h30 v15 z v-30 z h-30 z" /></clipPath>
+                                                    <g clip-path="url(#s)">
+                                                        <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
+                                                        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6" />
+                                                        <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4" clip-path="url(#t)" />
+                                                        <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10" />
+                                                        <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6" />
+                                                    </g>
+                                                </svg>
+                                            </span>
+                                            English
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="header-element header-theme-mode">
+                                <a href="javascript:void(0);" class="header-link layout-setting">
+                                    <span class="light-layout">
+                                        <!-- Start::header-link-icon -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="header-link-icon" width="32" height="32" fill="#000000" viewBox="0 0 256 256"><path d="M98.31,130.38ZM94.38,17.62h0A64.06,64.06,0,0,1,17.62,94.38h0A64.12,64.12,0,0,0,55,138.93h0a44.08,44.08,0,0,1,43.33-8.54,68.13,68.13,0,0,1,45.47-47.32l.15,0c0-1,.07-2,.07-3A64,64,0,0,0,94.38,17.62Z" opacity="0.1"></path><path d="M164,72a76.45,76.45,0,0,0-12.36,1A71.93,71.93,0,0,0,96.17,9.83a8,8,0,0,0-9.59,9.58A56.45,56.45,0,0,1,88,32,56.06,56.06,0,0,1,32,88a56.45,56.45,0,0,1-12.59-1.42,8,8,0,0,0-9.59,9.59,72.22,72.22,0,0,0,32.29,45.06A52,52,0,0,0,84,224h80a76,76,0,0,0,0-152ZM29.37,104c.87,0,1.75,0,2.63,0a72.08,72.08,0,0,0,72-72c0-.89,0-1.78,0-2.67a55.63,55.63,0,0,1,32,48,76.28,76.28,0,0,0-43,43.4A52,52,0,0,0,54,129.59,56.22,56.22,0,0,1,29.37,104ZM164,208H84a36,36,0,1,1,4.78-71.69c-.37,2.37-.63,4.79-.77,7.23a8,8,0,0,0,16,.92,58.91,58.91,0,0,1,1.88-11.81c0-.16.09-.32.12-.48A60.06,60.06,0,1,1,164,208Z"></path></svg>
+                                        <!-- End::header-link-icon -->
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="header-element dropdown">
+                                <a href="javascript:void(0);" class="header-link dropdown-toggle" id="mainHeaderProfile" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-xl-2 me-0">
+                                            <img src="@(GetImageSrc(UserDetails.ProfilePicture))" class="avatar avatar-sm avatar-rounded">
+                                        </div>
+                                    </div>
+                                    <div class="d-xl-block d-md-block d-none lh-1">
+                                        <span id="headerUserName" class="fw-medium lh-1" style="padding-left: 0.4em">
+                                            @UserDetails.FirstName @UserDetails.LastName
+                                        </span>
+                                    </div>
+                                </a>
+                                <ul class="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end" aria-labelledby="mainHeaderProfile">
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" href="/my-profile">
+                                            <i class="ti ti-user me-2 fs-18 text-primary"></i>My Profile
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center"
+                                           href="javascript:void(0);"
+                                           @onclick="Logout"
+                                           @onclick:preventDefault="true">
+                                            <i class="ti ti-logout me-2 fs-18 text-warning"></i>Logout
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
                     </Authorized>
                     <NotAuthorized>
                         <a href="/login">Login</a>
                     </NotAuthorized>
                 </AuthorizeView>
-            </span>
+            </ul>
         </div>
 
         <article class="content px-4">
@@ -33,17 +119,200 @@
 
 @code
 {
+@using Shared.Dtos.Users
 @using Shared.Helpers
+@using Shared.Services.Users
 
-    [Inject]
-private IAuthenticationHelper? _authHelper { get; set; }
+    [Inject] private IAuthenticationHelper? _authHelper { get; set; }
 
-[Inject]
-private NavigationManager? navManager { get; set; }
+[Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; }
+
+[Inject] private NavigationManager? navManager { get; set; }
+
+[Inject] private IUserService _userService { get; set; }
+
+public UserDto UserDetails { get; set; }
+
+protected override async Task OnInitializedAsync()
+{
+    await GetLoggedUserInfo();
+}
+
+private async Task GetLoggedUserInfo()
+{
+    var authState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+    if (user.Identity.IsAuthenticated)
+    {
+        var userId = user.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+        UserDetails = await _userService.GetByIdAsync(userId);
+
+        StateHasChanged();
+    }
+}
 
 private async Task Logout()
 {
     await _authHelper.LogoutAsync();
     navManager.NavigateTo("/login", forceLoad: true);
 }
+
+private string GetImageSrc(byte[]? imageBytes)
+{
+    if (imageBytes == null || imageBytes.Length == 0)
+        return $"/assets/images/emptyImg.jpg";
+
+    string imageBase64 = Convert.ToBase64String(imageBytes);
+    return $"data:image/png;base64,{imageBase64}";
 }
+}
+
+
+<script>
+    function closeProfileDropdown() {
+      var dropdownToggle = document.getElementById('mainHeaderProfile');
+      var dropdown = bootstrap.Dropdown.getInstance(dropdownToggle);
+      if (dropdown) {
+        dropdown.hide();
+      }
+    }
+</script>
+
+<style>
+    :root {
+        --hdr-gap: 0.75rem;
+        --hdr-link-color: #475569;
+        --hdr-link-color-hover: #0f172a;
+        --hdr-muted: #64748b;
+        --hdr-bg-hover: rgba(0,0,0,0.04);
+        --dropdown-shadow: 0 8px 24px rgba(0,0,0,.12);
+    }
+
+    .header-content-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: var(--hdr-gap);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        min-height: 48px;
+    }
+
+        .header-content-right .header-element {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .header-content-right .header-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--hdr-link-color);
+            text-decoration: none;
+            border-radius: 8px;
+            padding: 6px 10px;
+            line-height: 1;
+            transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+        }
+
+            .header-content-right .header-link:hover,
+            .header-content-right .header-link:focus-visible {
+                color: var(--hdr-link-color-hover);
+                background: var(--hdr-bg-hover);
+                outline: none;
+            }
+
+            .header-content-right .header-link .header-link-icon {
+                width: 22px;
+                height: 22px;
+                display: block;
+                fill: currentColor;
+            }
+
+        .header-content-right .avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 1px rgba(0,0,0,.05);
+        }
+
+            .header-content-right .avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        .header-content-right .country-selector .dropdown-toggle::after {
+            margin-left: .35rem;
+        }
+
+    .main-header-dropdown.dropdown-menu {
+        min-width: 220px;
+        padding: 8px;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,.06);
+        box-shadow: var(--dropdown-shadow);
+    }
+
+    .main-header-dropdown .dropdown-item {
+        border-radius: 8px;
+        color: var(--hdr-link-color);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        padding: 8px 10px;
+        transition: background-color .15s ease, color .15s ease;
+    }
+
+        .main-header-dropdown .dropdown-item:hover,
+        .main-header-dropdown .dropdown-item:focus-visible {
+            color: var(--hdr-link-color-hover);
+            background: var(--hdr-bg-hover);
+            outline: none;
+        }
+
+        .main-header-dropdown .dropdown-item .avatar {
+            width: 18px;
+            height: 18px;
+            box-shadow: none;
+        }
+
+    .header-theme-mode .header-link .light-layout,
+    .header-theme-mode .header-link .dark-layout {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    @@media (max-width: 576px) {
+        .header-content-right {
+            gap: 0.5rem;
+            min-height: 44px;
+        }
+
+            .header-content-right .header-link {
+                padding: 6px 8px;
+            }
+
+        .main-header-dropdown.dropdown-menu {
+            min-width: 180px;
+        }
+    }
+
+    .mud-popover,
+    .mud-snackbar,
+    .mud-dialog {
+        z-index: 1100;
+    }
+
+    .header-content-right .header-link:focus-visible,
+    .main-header-dropdown .dropdown-item:focus-visible {
+        box-shadow: 0 0 0 2px rgba(59,130,246,.35);
+    }
+
+</style>

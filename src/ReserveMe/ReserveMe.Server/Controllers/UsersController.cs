@@ -1,6 +1,7 @@
 ﻿namespace ReserveMe.Server.Controllers
 {
 	using Application.Users.Queries;
+	using Microsoft.AspNetCore.Authorization;
 	using Microsoft.AspNetCore.Mvc;
 	using Shared.Dtos.Users;
 
@@ -16,6 +17,12 @@
 			return result;
 		}
 
+		[HttpGet("GetUserById")]
+		[Authorize]
+		public async Task<ActionResult<UserDto>> GetUserById(string id)
+		{
+			return await Mediator.Send(new GetUserByIdQuery(id));
+		}
 		#endregion
 	}
 }
