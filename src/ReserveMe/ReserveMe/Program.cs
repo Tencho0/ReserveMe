@@ -2,16 +2,17 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
+using ReserveMe;
 using Shared.Authorization;
 using Shared.Helpers;
 using Shared.Providers;
-using ReserveMe;
-using Shared.Services.Venues;
-using Shared.Services.VenueTypes;
 using Shared.Services.Media;
 using Shared.Services.Reservations;
+using Shared.Services.Reviews;
 using Shared.Services.Users;
-using MudBlazor.Services;
+using Shared.Services.Venues;
+using Shared.Services.VenueTypes;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -38,6 +39,7 @@ builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<IVenueTypesService, VenueTypesService>();
 builder.Services.AddScoped<IReservationsService, ReservationsService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IReviewsService, ReviewsService>();
 
 builder.Services.AddAuthorizationCore();
 

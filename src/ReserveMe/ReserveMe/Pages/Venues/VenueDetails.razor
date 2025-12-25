@@ -151,22 +151,65 @@
 
                 <div class="card">
                     <h3 class="card-title">Leave a Review</h3>
-                    <div class="field">
-                        <label class="label">Rating</label>
-                        <select class="input">
-                            <option value="5">5</option>
-                            <option value="4">4</option>
-                            <option value="3">3</option>
-                            <option value="2">2</option>
-                            <option value="1">1</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label class="label">Your Review</label>
-                        <textarea class="input textarea" placeholder="Write your opinion..."></textarea>
-                    </div>
-                    <button class="btn btn-secondary w-100">Submit</button>
+
+                    <EditForm EditContext="@reviewEditContext" OnValidSubmit="@SubmitReviewAsync">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="field">
+                            <label class="label">Rating</label>
+                            <InputSelect class="input" @bind-Value="reviewDto.Rating">
+                                @for (var r = 5; r >= 1; r--)
+                                {
+                                    <option value="@r">@r</option>
+                                }
+                            </InputSelect>
+                            <div class="stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    var active = i <= reviewDto.Rating ? "star active" : "star";
+                                    <button type="button" class="@active" @onclick="() => reviewDto.Rating = i" aria-label="Rate @i">★</button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Your Review</label>
+                            <InputTextArea class="input textarea" @bind-Value="reviewDto.Comment" placeholder="Write your opinion..." />
+                        </div>
+
+                        <button class="btn btn-secondary w-100" type="submit" disabled="@submitting">
+                            @(submitting ? "Submitting..." : "Submit")
+                        </button>
+
+                        @if (!string.IsNullOrEmpty(submitSuccess))
+                        {
+                            <div class="alert success">@submitSuccess</div>
+                        }
+                        @if (!string.IsNullOrEmpty(submitError))
+                        {
+                            <div class="alert error">@submitError</div>
+                        }
+                    </EditForm>
                 </div>
+
+                <!-- Optional: latest reviews preview -->
+                @*   @if (recentReviews?.Count > 0)
+                {
+                    <div class="card">
+                        <h3 class="card-title">Latest Reviews</h3>
+                        <ul class="table-list">
+                            @foreach (var r in recentReviews)
+                            {
+                                <li class="table-item">
+                                    <span class="table-name">@($"{new string('★', r.Rating)}")</span>
+                                    <span>@r.Comment</span>
+                                    <span class="muted">— @r.AuthorName • @r.CreatedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                } *@
             </section>
         </main>
     </div>
