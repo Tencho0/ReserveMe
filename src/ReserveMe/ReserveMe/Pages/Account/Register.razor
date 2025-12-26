@@ -1,49 +1,100 @@
 ﻿@page "/register"
 
-<h3>Register</h3>
+<div class="register-container">
+    <div class="register-card shadow-lg p-4 rounded">
+        <h3 class="text-center mb-3">Create Your Account</h3>
+        <p class="text-muted text-center mb-4">Join us and start your journey</p>
 
-<EditForm Model="registerUser" OnValidSubmit="RegisterUser">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <EditForm Model="registerUser" OnValidSubmit="RegisterUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger mb-3" />
 
-    <div class="mb-3">
-        <label for="firstName" class="form-label">First Name</label>
-        <InputText id="firstName"
-                   class="form-control"
-                   @bind-Value="registerUser.FirstName" />
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="firstName" class="form-label fw-bold">First Name</label>
+                    <InputText id="firstName"
+                               class="form-control form-control-lg"
+                               placeholder="Enter first name"
+                               @bind-Value="registerUser.FirstName" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="lastName" class="form-label fw-bold">Last Name</label>
+                    <InputText id="lastName"
+                               class="form-control form-control-lg"
+                               placeholder="Enter last name"
+                               @bind-Value="registerUser.LastName" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label fw-bold">Email</label>
+                <InputText id="email"
+                           class="form-control form-control-lg"
+                           placeholder="Enter your email"
+                           @bind-Value="registerUser.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label fw-bold">Password</label>
+                <InputText id="password"
+                           type="password"
+                           class="form-control form-control-lg"
+                           placeholder="Enter your password"
+                           @bind-Value="registerUser.Password" />
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label fw-bold">Confirm Password</label>
+                <InputText id="confirmPassword"
+                           type="password"
+                           class="form-control form-control-lg"
+                           placeholder="Confirm your password"
+                           @bind-Value="registerUser.ConfirmPassword" />
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 btn-lg">
+                <i class="bi bi-person-plus"></i> Register
+            </button>
+        </EditForm>
+
+        <div class="text-center mt-3">
+            <a href="/login">Already have an account?</a>
+        </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label for="lastName" class="form-label">Last Name</label>
-        <InputText id="lastName"
-                   class="form-control"
-                   @bind-Value="registerUser.LastName" />
-    </div>
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    }
 
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <InputText id="email"
-                   class="form-control"
-                   @bind-Value="registerUser.Email" />
-    </div>
+    .register-card {
+        max-width: 500px;
+        width: 100%;
+        background-color: #fff;
+    }
 
-    <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <InputText id="password"
-                   type="password"
-                   class="form-control"
-                   @bind-Value="registerUser.Password" />
-    </div>
+        .register-card h3 {
+            font-weight: 600;
+            color: #343a40;
+        }
 
-    <div class="mb-3">
-        <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <InputText id="confirmPassword"
-                   type="password"
-                   class="form-control"
-                   @bind-Value="registerUser.ConfirmPassword" />
-    </div>
+        .register-card .form-control {
+            border-radius: 8px;
+        }
 
-    <button type="submit" class="btn btn-primary">
-        Register
-    </button>
-</EditForm>
+        .register-card button {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .register-card a {
+            color: #0d6efd;
+            font-size: 0.9rem;
+        }
+</style>
