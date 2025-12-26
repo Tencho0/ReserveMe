@@ -89,10 +89,11 @@
                             <span class="v muted">(Address not provided — use coordinates)</span>
                         </div>
                     </div>
-                    <div class="map-container">
-                        @* //TODO *@
-                        MAP COMPONENT (@venue.Latitude, @venue.Longitude)
-                    </div>
+                    @* //TODO: MAP INTEGRATION *@
+                    @* <div class="map-container">
+                        <div id="map-@venue.Id" class="gm-map" title="Venue location"></div>
+                    </div> *@
+
                 </article>
 
                 @if (recentReviews?.Count > 0)
@@ -442,6 +443,12 @@
         height: 18px;
         fill: currentColor;
         opacity: 0.8;
+    }
+
+    .gm-map {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
     }
 
     .map-container {

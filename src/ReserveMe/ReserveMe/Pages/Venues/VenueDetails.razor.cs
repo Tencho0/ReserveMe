@@ -2,6 +2,7 @@
 {
 	using Microsoft.AspNetCore.Components;
 	using Microsoft.AspNetCore.Components.Forms;
+	using Microsoft.JSInterop;
 	using Shared.Dtos.Reviews;
 	using Shared.Dtos.Venues;
 	using Shared.Helpers;
@@ -15,6 +16,8 @@
 		[Inject] private IVenuesService _venuesService { get; set; } = null!;
 		[Inject] private IReviewsService _reviewsService { get; set; } = null!;
 		[Inject] private IAuthenticationHelper _authHelper { get; set; } = null!;
+		[Inject] private IJSRuntime jsRuntime { get; set; }
+		[Inject] private IConfiguration Configuration { get; set; } = default!;
 
 		public string? UserId { get; set; }
 
@@ -23,6 +26,10 @@
 
 		private ReviewDto reviewDto = new() { Rating = 0 };
 		private EditContext reviewEditContext = default!;
+
+		private bool _mapInitialized;
+		private string GoogleMapsApiKey => "api_key"; //Test purposes, use code below
+		/*=> Configuration["GoogleMaps:ApiKey"] ?? string.Empty;*/
 
 		private bool submitting;
 		private string? submitError;
@@ -38,6 +45,33 @@
 			this.venue = await this._venuesService.GetVenueById(VenueId);
 			this.recentReviews = await this._reviewsService.GetReviewsByVenueId(VenueId);
 		}
+
+		//TODO: MAP INTEGRATION
+		//protected override async Task OnAfterRenderAsync(bool firstRender)
+		//{
+		//	if (!_mapInitialized && venue is not null && venue.Latitude != 0 && venue.Longitude != 0)
+		//	{
+		//		var elementId = $"map-{venue.Id}";
+		//		try
+		//		{
+		//			await jsRuntime.InvokeVoidAsync(
+		//				"venueMap.init",
+		//				GoogleMapsApiKey,
+		//				elementId,
+		//				venue.Latitude,
+		//				venue.Longitude,
+		//				venue.Name
+		//			);
+		//			_mapInitialized = true;
+		//		}
+		//		catch (JSException ex)
+		//		{
+		//			Console.WriteLine(ex.Message);
+		//		}
+		//	}
+
+		//	await base.OnAfterRenderAsync(firstRender);
+		//}
 
 		private async Task SubmitReviewAsync()
 		{
