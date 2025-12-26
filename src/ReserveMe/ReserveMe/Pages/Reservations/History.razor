@@ -21,7 +21,6 @@
                 @foreach (var r in Reservations)
                 {
                     <a class="reservation-item" @onclick="() => OpenReservation(r.Id)">
-                        <!-- Top-right status badge -->
                         <span class="item__status-badge reservation-status @GetStatusClass(r.Status)">
                             @GetStatusLabel(r.Status)
                         </span>
@@ -52,8 +51,9 @@
                                 </div>
 
                                 <div class="item__meta">
-                                    <span class="reservation-date">Дата: @(r.ReservationTime)</span>
-                                    @* <span class="reservation-date">Дата: @(r.ReservationTime.ToString("dd.MM.yyyy, HH:mm"))</span> *@
+                                    <span class="reservation-date">
+                                        Дата: @r.ReservationTime?.ToString("dd MMMM yyyy, HH:mm", new System.Globalization.CultureInfo("bg-BG"))
+                                    </span>
 
                                     <span class="meta-chip meta-chip--guests">
                                         <span class="chip-label">Гости:</span>
@@ -81,7 +81,6 @@
 
 <style>
 
-    /* —— Scoped variables for easy theming —— */
     .history-page {
         --bg-card: #ffffff;
         --bg-surface: #f9fafb;
@@ -92,15 +91,13 @@
         --shadow-md: 0 8px 20px rgba(15, 23, 42, 0.12);
         --brand: #15800c;
         --accent: #111827;
-        /* Status palette to match your enum */
-        --status-pending: #f59e0b; /* amber */
-        --status-approved: #10b981; /* emerald */
-        --status-inprogress: #3b82f6; /* blue */
-        --status-declined: #ef4444; /* red */
-        --status-completed: #64748b; /* slate */
+        --status-pending: #f59e0b;
+        --status-approved: #10b981;
+        --status-inprogress: #3b82f6;
+        --status-declined: #ef4444;
+        --status-completed: #64748b;
     }
 
-        /* Logo */
         .history-page .page-logo {
             width: 100%;
             display: flex;
@@ -113,7 +110,6 @@
                 height: auto;
             }
 
-        /* Outer card wrapper */
         .history-page .page-card {
             width: 100%;
             max-width: 760px;
@@ -124,7 +120,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .history-page .page-header h1 {
             margin: 0 0 6px 0;
             font-size: 22px;
@@ -138,7 +133,6 @@
             font-size: 14px;
         }
 
-        /* List */
         .history-page .reservation-list {
             display: flex;
             flex-direction: column;
@@ -153,13 +147,12 @@
             border: 1px dashed var(--border);
         }
 
-        /* Item card (positioning for badge included) */
         .history-page .reservation-item {
-            position: relative; /* for badge positioning */
+            position: relative;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding: 28px 14px 14px; /* extra top padding for badge */
+            padding: 28px 14px 14px;
             border-radius: 12px;
             border: 1px solid var(--border);
             background: var(--bg-surface);
@@ -176,7 +169,6 @@
                 box-shadow: var(--shadow-sm);
             }
 
-        /* Top-right status badge */
         .history-page .item__status-badge {
             position: absolute;
             top: 10px;
@@ -188,10 +180,9 @@
             font-weight: 600;
             color: #fff;
             box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
-            pointer-events: none; /* badge doesn't block clicks */
+            pointer-events: none;
         }
 
-        /* Status fills (enum-aligned) */
         .history-page .reservation-status--pending {
             background: var(--status-pending);
         }
@@ -212,14 +203,12 @@
             background: var(--status-completed);
         }
 
-        /* Main row */
         .history-page .item__main {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        /* Logo */
         .history-page .item__logo {
             flex: 0 0 48px;
             display: flex;
@@ -232,7 +221,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            object-fit: cover; /* crops to circle nicely */
+            object-fit: cover;
             border: 1px solid var(--border);
             background: #fff;
             box-shadow: 0 1px 3px rgba(15,23,42,0.06);
@@ -243,7 +232,7 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: #e6f4ea; /* soft green tint */
+            background: #e6f4ea;
             color: var(--brand);
             display: flex;
             align-items: center;
@@ -252,7 +241,6 @@
             font-size: 14px;
         }
 
-        /* Content block */
         .history-page .item__content {
             flex: 1;
             display: flex;
@@ -264,7 +252,7 @@
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            gap: 12px; /* avoid overlap with number */
+            gap: 12px;
         }
 
         .history-page .restaurant-name {
@@ -284,7 +272,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Meta row */
         .history-page .item__meta {
             display: flex;
             flex-wrap: wrap;
@@ -297,7 +284,6 @@
             color: #4b5563;
         }
 
-        /* Meta chips for guests & venue */
         .history-page .meta-chip {
             display: inline-flex;
             align-items: center;
@@ -334,7 +320,7 @@
         .history-page .reservation-item {
             padding-top: 32px;
         }
-        /* slightly more room for the badge */
+
         .history-page .restaurant-name {
             font-size: 16px;
         }
