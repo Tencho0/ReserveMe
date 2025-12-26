@@ -23,6 +23,12 @@
 			return await Mediator.Send(new GetReservationsQuery(venueId));
 		}
 
+		[HttpGet("getReservationsByClientId/{userId}")]
+		public async Task<ActionResult<List<ReservationForClientDto>>> GetReservationsByClientId(string userId)
+		{
+			return await Mediator.Send(new GetReservationsByClientIdQuery(userId));
+		}
+
 		#endregion
 
 		#region CREATE

@@ -7,6 +7,8 @@
 	{
 		Task<List<ReservationDto>> GetReservations(int venueId);
 
+		Task<List<ReservationForClientDto>> GetReservationsByClientId(string userId);
+
 		Task CreateReservationAsync(ReservationDto reservationDto);
 
 		Task<bool> ChangeReservationStatus(int orderId, ReservationStatus newStatus);

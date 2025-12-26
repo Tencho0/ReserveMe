@@ -1,0 +1,349 @@
+﻿@page "/history"
+
+<div class="history-page">
+    <div class="page-card">
+        <header class="page-header">
+            <h1>История на резервациите</h1>
+            <p>Виж всички свои минали и предстоящи резервации.</p>
+        </header>
+
+        <div class="reservation-list">
+            @if (Reservations == null)
+            {
+                <p class="state state--loading">Зареждане...</p>
+            }
+            else if (!Reservations.Any())
+            {
+                <p class="state state--empty">Няма резервации.</p>
+            }
+            else
+            {
+                @foreach (var r in Reservations)
+                {
+                    <a class="reservation-item" @onclick="() => OpenReservation(r.Id)">
+                        <div class="item__main">
+                            <div class="item__logo">
+                                @if (!string.IsNullOrWhiteSpace(r.VenueLogo))
+                                {
+                                    <img class="logo-img"
+                                         src="@r.VenueLogo"
+                                         alt="venueLogo"
+                                         loading="lazy" />
+                                }
+                                else
+                                {
+
+                                    <img class="logo-img"
+                                         src="/assets/images/emptyImg.jpg"
+                                         alt="venueLogo"
+                                         loading="lazy" />
+                                }
+                            </div>
+
+                            <div class="item__content">
+                                <div class="item__header">
+                                    <h2 class="restaurant-name">@r.VenueName</h2>
+
+                                    <div class="item__header-right">
+                                        <span class="reservation-number">#@r.Id</span>
+                                        <span class="item__status-badge reservation-status @GetStatusClass(r.Status)">
+                                            @GetStatusLabel(r.Status)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="item__meta">
+                                    <span class="reservation-date">
+                                        Дата: @r.ReservationTime?.ToString("dd MMMM yyyy, HH:mm", new System.Globalization.CultureInfo("bg-BG"))
+                                    </span>
+
+                                    <span class="meta-chip meta-chip--guests">
+                                        <span class="chip-label">Гости:</span>
+                                        <span class="chip-value">@r.GuestsCount</span>
+                                    </span>
+
+                                    <span class="meta-chip meta-chip--venue">
+                                        <span class="chip-label">Тип:</span>
+                                        <span class="chip-value">@r.VenueType</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="item__address">
+                            <span class="address-label">Адрес:</span>
+                            <span class="address-text">@(r.VenueLatitude), @(r.VenueLongitude)</span>
+                        </div>
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+
+    .history-page {
+        --bg-card: #ffffff;
+        --bg-surface: #f9fafb;
+        --border: #e5e7eb;
+        --text: #111827;
+        --text-muted: #6b7280;
+        --shadow-sm: 0 4px 10px rgba(15, 23, 42, 0.08);
+        --shadow-md: 0 8px 20px rgba(15, 23, 42, 0.12);
+        --brand: #15800c;
+        --accent: #111827;
+        --status-pending: #f59e0b;
+        --status-approved: #10b981;
+        --status-inprogress: #3b82f6;
+        --status-declined: #ef4444;
+        --status-completed: #64748b;
+    }
+
+        .history-page .page-logo {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+            .history-page .page-logo img {
+                width: 120px;
+                height: auto;
+            }
+
+        .history-page .page-card {
+            width: 100%;
+            max-width: 760px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            margin: 0 auto;
+        }
+
+        .history-page .page-header h1 {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .history-page .page-header p {
+            margin: 0 0 16px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .history-page .reservation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-page .state {
+            padding: 12px;
+            border-radius: 10px;
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            border: 1px dashed var(--border);
+        }
+
+        .history-page .reservation-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 14px 14px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+            .history-page .reservation-item:hover {
+                background: #fff;
+                border-color: var(--brand);
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-sm);
+            }
+
+        .history-page .item__status-badge {
+            position: static;   
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+            pointer-events: none;
+        }
+
+        .history-page .reservation-status--pending {
+            background: var(--status-pending);
+        }
+
+        .history-page .reservation-status--approved {
+            background: var(--status-approved);
+        }
+
+        .history-page .reservation-status--inprogress {
+            background: var(--status-inprogress);
+        }
+
+        .history-page .reservation-status--declined {
+            background: var(--status-declined);
+        }
+
+        .history-page .reservation-status--completed {
+            background: var(--status-completed);
+        }
+
+        .history-page .item__main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-page .item__logo {
+            flex: 0 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .history-page .logo-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.06);
+            display: block;
+        }
+
+        .history-page .logo-fallback {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #e6f4ea;
+            color: var(--brand);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .history-page .item__content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .history-page .item__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .history-page .item__header-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-page .restaurant-name {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .history-page .reservation-number {
+            font-size: 12px;
+            color: #9ca3af;
+            max-width: 35%;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-page .item__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .history-page .reservation-date {
+            color: #4b5563;
+        }
+
+        .history-page .meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: #eef2f7;
+            color: #374151;
+            font-size: 12px;
+            line-height: 1;
+            border: 1px solid #e5e7eb;
+        }
+
+            .history-page .meta-chip .chip-label {
+                font-weight: 600;
+                color: #111827;
+            }
+
+            .history-page .meta-chip .chip-value {
+                font-weight: 500;
+            }
+
+        .history-page .meta-chip--guests {
+            background: #eaf7ef;
+            border-color: #d5eadb;
+        }
+
+        .history-page .meta-chip--venue {
+            background: #f0f5ff;
+            border-color: #dbe5ff;
+        }
+
+    @@media (max-width: 560px) {
+        .history-page .reservation-item {
+            padding-top: 32px;
+        }
+
+        .history-page .restaurant-name {
+            font-size: 16px;
+        }
+
+        .history-page .item__meta {
+            font-size: 12px;
+        }
+
+        .history-page .meta-chip {
+            padding: 2px 6px;
+            font-size: 11px;
+        }
+
+        .history-page .reservation-number {
+            max-width: 45%;
+        }
+    }
+</style>

@@ -51,6 +51,7 @@
 		#region Reservations
 
 		public static string GetReservations = $"{BaseAddressApi}reservations/getAll";
+		public static string GetReservationsByClientId = $"{BaseAddressApi}reservations/getReservationsByClientId";
 
 		public static string CreateReservation = $"{BaseAddressApi}reservations/create";
 
@@ -61,7 +62,7 @@
 		#region Reviews
 
 		public static string GetReviewsByVenueId = $"{BaseAddressApi}reviews/getReviewsByVenueId";
-		
+
 		public static string CreateReview = $"{BaseAddressApi}reviews/create";
 
 		#endregion

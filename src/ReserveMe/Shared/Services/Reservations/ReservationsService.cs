@@ -39,6 +39,25 @@
 			}
 		}
 
+		public async Task<List<ReservationForClientDto>> GetReservationsByClientId(string userId)
+		{
+			try
+			{
+				object[] uriParams = new object[]
+				{
+					userId
+				};
+
+				var result = await _provider.GetAsync<List<ReservationForClientDto>>(Endpoints.GetReservationsByClientId + "/{0}", uriParams, null, null);
+
+				return result;
+			}
+			catch (Exception ex)
+			{
+				return new List<ReservationForClientDto>();
+			}
+		}
+
 		#endregion
 
 		#region POST
