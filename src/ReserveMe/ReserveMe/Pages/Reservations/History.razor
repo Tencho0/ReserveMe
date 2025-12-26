@@ -21,10 +21,6 @@
                 @foreach (var r in Reservations)
                 {
                     <a class="reservation-item" @onclick="() => OpenReservation(r.Id)">
-                        <span class="item__status-badge reservation-status @GetStatusClass(r.Status)">
-                            @GetStatusLabel(r.Status)
-                        </span>
-
                         <div class="item__main">
                             <div class="item__logo">
                                 @if (!string.IsNullOrWhiteSpace(r.VenueLogo))
@@ -47,7 +43,13 @@
                             <div class="item__content">
                                 <div class="item__header">
                                     <h2 class="restaurant-name">@r.VenueName</h2>
-                                    <span class="reservation-number">#@r.Id</span>
+
+                                    <div class="item__header-right">
+                                        <span class="reservation-number">#@r.Id</span>
+                                        <span class="item__status-badge reservation-status @GetStatusClass(r.Status)">
+                                            @GetStatusLabel(r.Status)
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div class="item__meta">
@@ -152,7 +154,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            padding: 28px 14px 14px;
+            padding: 14px 14px 14px;
             border-radius: 12px;
             border: 1px solid var(--border);
             background: var(--bg-surface);
@@ -170,7 +172,7 @@
             }
 
         .history-page .item__status-badge {
-            position: absolute;
+            position: static;   
             top: 10px;
             right: 10px;
             z-index: 2;
@@ -251,8 +253,14 @@
         .history-page .item__header {
             display: flex;
             justify-content: space-between;
-            align-items: baseline;
+            align-items: center;
             gap: 12px;
+        }
+
+        .history-page .item__header-right {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .history-page .restaurant-name {
