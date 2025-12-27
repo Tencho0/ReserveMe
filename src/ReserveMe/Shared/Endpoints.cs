@@ -28,6 +28,8 @@
 
 		public static string GetVenueById = $"{BaseAddressApi}venues/getVenueById";
 
+		public static string GetMyVenue = $"{BaseAddressApi}venues/getVenueDetailsByVenueId";
+
 		public static string GetVenuesForClient = $"{BaseAddressApi}venues/getVenuesForClient";
 
 		public static string CreateVenue = $"{BaseAddressApi}venues/create";

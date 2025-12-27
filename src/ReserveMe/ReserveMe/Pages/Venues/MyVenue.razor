@@ -1,0 +1,212 @@
+﻿@page "/myVenue"
+
+
+@if (venue != null)
+{
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card custom-card">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-evenly flex-wrap">
+                        <div>
+                            <div class="d-flex align-items-center flex-wrap justify-content-center">
+                                <span class="avatar avatar-xxl avatar-rounded position-relative">
+                                    @if (!string.IsNullOrWhiteSpace(venue.ImageUrl))
+                                    {
+                                        <img src="@venue.ImageUrl" alt="Selected Image" id="profile-img" />
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-nowrap justify-content-between">
+                            <div class="d-flex ml-1 p-3">
+                                <div class="d-flex align-items-center flex-nowrap gap-2">
+                                    <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-info-light btn-wave" data-bs-toggle="modal" data-bs-target="#editMenuName">
+                                        <i class="ri-edit-line"></i>
+                                    </a>
+                                    <p class="col-xl mb-0"><b>Name:</b> @venue.Name </p>
+                                </div>
+                            </div>
+                            <div class="d-flex ml-1 p-3">
+                                <div class="d-flex align-items-center flex-nowrap gap-2">
+                                    <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-info-light btn-wave" data-bs-toggle="modal" data-bs-target="#editLocation">
+                                        <i class="ri-edit-line"></i>
+                                    </a>
+                                    <p class="col-xl mb-0"> <b>Location:</b> @venue.Latitude° N, @venue.Longitude° W </p>
+                                </div>
+                            </div>
+                            <div class="d-flex ml-1 p-3">
+                                <div class="d-flex align-items-start flex-nowrap gap-2">
+                                    <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-info-light btn-wave" data-bs-toggle="modal" data-bs-target="#editDescription">
+                                        <i class="ri-edit-line"></i>
+                                    </a>
+                                    <p class="col-xl mb-0 pt-1"> <b>Description:</b> @venue.Description </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start::Owners Section -->
+    <div class="row mt-2">
+        <div class="col-xl-12">
+            <div class="card custom-card overflow-hidden">
+                <div class="card-header justify-content-between bg-light">
+                    <div class="card-title">Owners</div>
+                    <div class="d-flex gap-3 align-items-center flex-wrap">
+                        @* <button type="button"
+                            class="btn btn-primary btn-wave"
+                            @onclick="ShowAddOwnerModal">
+                        <i class="bi bi-plus-circle me-1"></i> @LocalizationService.GetLocalizedString("AddOwner_Label")
+                    </button> *@
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive overflow-auto" style="max-height: 336px;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Name</th>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Email/UserName</th>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">PhoneNumber</th>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Status</th>
+                                    <AuthorizeView Context="adminAuth" Roles="SuperAdmin">
+                                        <Authorized>
+                                            <th style="width: 20%; text-align: center;">Actions</th>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (owners.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">No owners assigned</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var owner in owners)
+                                    {
+                                        <tr>
+                                            <td class="text-center">@owner.FirstName @owner.LastName</td>
+                                            <td class="text-center">@owner.Email</td>
+                                            <td class="text-center">@owner.PhoneNumber</td>
+                                            <td class="text-center">
+                                                <span class="badge @(owner.IsActive ? "bg-success-transparent" : "bg-danger-transparent")">
+                                                    @(owner.IsActive ? "Active" : "Inactive_Label")
+                                                </span>
+                                            </td>
+
+                                            @*  <AuthorizeView Context="adminAuth" Roles="SuperAdmin">
+                                            <Authorized>
+                                                <td class="text-center">
+                                                    <div class="d-flex gap-2 justify-content-center">
+                                                        <button class="btn btn-sm btn-info-light btn-wave" @onclick='() => ShowOwnerModal("info", owner.Id)'>
+                                                            <i class="ri-edit-line"></i>
+                                                        </button>
+                                                        <button class="btn btn-sm btn-danger-light btn-wave" @onclick='() => ConfirmRemoveOwner(owner.Id, owner.Email)'>
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+                                                        <button class="btn btn-icon btn-sm btn-success-light btn-wave" @onclick='() => ShowOwnerModal("pass", owner.Id)'>
+                                                            <i class="bx bx-key"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </Authorized>
+                                        </AuthorizeView> *@
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start::Waiter Section -->
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card custom-card overflow-hidden">
+                <div class="card-header justify-content-between bg-light">
+                    <div class="card-title">Venue Waiters</div>
+                    <div class="d-flex gap-3 align-items-center flex-wrap">
+                        @* <a href="javascript:void(0);" class="btn btn-primary btn-wave" @onclick='() => ShowWeiterModal("true")'>
+                            <i class="bi bi-plus-circle me-1"></i> AddWaiter
+                        </a> *@
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive overflow-auto" style="max-height: 336px; overflow-x: hidden;">
+                        <table class="table table-hover" style="table-layout: fixed; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Name</th>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Email/UserName</th>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">PhoneNumber</th>
+                                    <th style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Status</th>
+                                    <th style="z-index:100; width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (waiters.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">
+                                            <p style="margin: 0;">No Waiters Added</p>
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    @foreach (var waiter in waiters)
+                                    {
+                                        <tr>
+                                            <td style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">
+                                                <p class="mb-0">@waiter.FirstName @waiter.LastName</p>
+                                            </td>
+                                            <td style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">
+                                                @waiter.Email
+                                            </td>
+                                            <td style="width: 20%; text-align: center; white-space: normal; word-wrap: break-word;">
+                                                @waiter.PhoneNumber
+                                            </td>
+                                            <td style="width: 20%; text-align: center; vertical-align: middle;">
+                                                @if (waiter.IsActive)
+                                                {
+                                                    <span class="badge bg-success-transparent">Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger-transparent">Inactive</span>
+                                                }
+                                            </td>
+                                            <td style="width: 20%; text-align: center; vertical-align: middle;">
+                                                @* <div class="d-flex gap-2 justify-content-center">
+                                                    <button class="btn btn-icon btn-sm btn-info-light btn-wave" @onclick='() => ShowWeiterModal("false", waiter.Id)'>
+                                                        <i class="ri-edit-line"></i>
+                                                    </button>
+                                                    <button class="btn btn-icon btn-sm btn-danger-light btn-wave" @onclick='() => ShowRemoveWaiterModal(waiter.Email, waiter.Id)'>
+                                                        <i class="ri-delete-bin-line"></i>
+                                                    </button>
+                                                    <button class="btn btn-icon btn-sm btn-success-light btn-wave" @onclick='() => ShowWeiterModal("pass", waiter.Id)'>
+                                                        <i class="bx bx-key"></i>
+                                                    </button>
+                                                </div> *@
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
