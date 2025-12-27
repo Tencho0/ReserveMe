@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Shared.Dtos.Venues;
 using Shared.Dtos.VenueTypes;
+using Shared.Helpers;
 using Shared.Services.Venues;
 using Shared.Services.VenueTypes;
 
@@ -12,6 +13,7 @@ public partial class VenueSearch : ComponentBase
 {
 	[Inject] private IVenueTypesService _venueTypesService { get; set; } = null!;
 	[Inject] private IVenuesService _venuesService { get; set; } = null!;
+	[Inject] private IAuthenticationHelper _authHelper { get; set; } = null!;
 	[Inject] private IJSRuntime jsRuntime { get; set; }
 
 	// Location
@@ -35,6 +37,8 @@ public partial class VenueSearch : ComponentBase
 	private int _totalCount = 0;
 	private bool _hasMore = true;
 
+	public string? UserId { get; set; }
+
 	// UI State
 	private bool _isLoading = false;
 	private bool _isLoadingMore = false;
@@ -46,6 +50,8 @@ public partial class VenueSearch : ComponentBase
 	protected override async Task OnInitializedAsync()
 	{
 		_isLoading = true;
+		UserId = await this._authHelper.GetUserId();
+
 		try
 		{
 			_venues = await _venuesService.GetVenuesForClient();

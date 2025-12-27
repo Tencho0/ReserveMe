@@ -155,10 +155,13 @@
                                 </div>
                             }
 
-                            @* Favorite button *@
-                            <button class="btn btn-light btn-sm favorite-btn" @onclick="() => ToggleFavorite(venue)">
-                                <i class="bi @(@* venue.IsFavorite ? "bi-heart-fill text-danger" : *@ "bi-heart")"></i>
-                            </button>
+                            @if (!string.IsNullOrEmpty(UserId))
+                            {
+                                @* Favorite button *@
+                                <button class="btn btn-light btn-sm favorite-btn" @onclick="() => ToggleFavorite(venue)">
+                                    <i class="bi @(@* venue.IsFavorite ? "bi-heart-fill text-danger" : *@ "bi-heart")"></i>
+                                </button>
+                            }
 
                             @* Venue type *@
                             <span class="badge venue-type-badge">

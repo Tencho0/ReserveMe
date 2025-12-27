@@ -162,12 +162,15 @@
                     }
                 </div> *@
 
-                <button type="button"
-                        class="venue-favorite-btn"
-                        @onclick="ToggleFav"
-                        aria-label="Favorite">
-                    @(IsFavorite ? "❤️" : "🤍")
-                </button>
+                @if (!string.IsNullOrEmpty(UserId))
+                {
+                    <button type="button"
+                            class="venue-favorite-btn"
+                            @onclick="ToggleFav"
+                            aria-label="Favorite">
+                        @(IsFavorite ? "❤️" : "🤍")
+                    </button>
+                }
 
                 <div class="venue-logo-overlay">
                     <img class="venue-logo-inside" src="@currVenue.LogoUrl" alt="Venue logo" />
