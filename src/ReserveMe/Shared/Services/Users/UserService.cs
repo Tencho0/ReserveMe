@@ -5,6 +5,7 @@
 	using Microsoft.JSInterop;
 	using Shared.Dtos.Users;
 	using Shared.Providers;
+	using Shared.Requests.Users;
 
 	public class UserService : IUserService
 	{
@@ -77,6 +78,25 @@
 				//_logger.LogError(ex.Message);
 
 				return new UserDto();
+			}
+		}
+
+		public async Task ChangeWaiterMenu(string userId, int? menuId)
+		{
+			try
+			{
+				var request = new ChangeUserVenueRequest
+				{
+					MenuId = menuId,
+					UserId = userId
+				};
+
+				await _provider.PutAsync<ChangeUserVenueRequest, object>(Endpoints.UpdateWaiterVenue, request, null);
+			}
+			catch (Exception ex)
+			{
+				//TODO: log error
+				//_logger.LogError(ex.Message);
 			}
 		}
 	}

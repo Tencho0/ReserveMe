@@ -20,6 +20,8 @@
 
 		public static string GetUserById = $"{BaseAddressApi}users/getuserbyid";
 
+		public static string UpdateWaiterVenue = $"{BaseAddressApi}users/updateWaiterVenue";
+		
 		#endregion
 
 		#region Venues
