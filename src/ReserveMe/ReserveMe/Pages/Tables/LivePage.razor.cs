@@ -1,14 +1,24 @@
 ﻿namespace ReserveMe.Pages.Tables
 {
 	using Microsoft.AspNetCore.Components;
+	using Shared.Dtos.Tables;
+	using Shared.Helpers;
+	using Shared.Services.Tables;
 
 	public partial class LivePage
 	{
+		[Inject] private ITablesService _tablesService { get; set; } = null!;
+		[Inject] private IAuthenticationHelper _authHelper { get; set; } = null!;
+		[Inject] private NavigationManager? navManager { get; set; } = null!;
+
+		public int VenueId { get; set; }
+
 		// Filters
 		private TableStatus? _statusFilter;
 		private bool? _activeFilter;
 
 		// Data
+		private List<TableDto> _tablesFromDb = new();
 		private List<TableViewModel> _tables = new();
 		private TableViewModel? _selectedTable;
 		private TableViewModel _editingTable = new();
@@ -47,6 +57,16 @@
 
 		protected override async Task OnInitializedAsync()
 		{
+			VenueId = await _authHelper.GetUserMenuId();
+
+			if (VenueId == 0)
+			{
+				navManager.NavigateTo("/404", forceLoad: true);
+				return;
+			}
+
+			this._tablesFromDb = await _tablesService.GetTablesByVenueId(VenueId);
+
 			await LoadTables();
 		}
 

@@ -10,6 +10,7 @@ using Shared.Providers;
 using Shared.Services.Media;
 using Shared.Services.Reservations;
 using Shared.Services.Reviews;
+using Shared.Services.Tables;
 using Shared.Services.Users;
 using Shared.Services.Venues;
 using Shared.Services.VenueTypes;
@@ -40,6 +41,7 @@ builder.Services.AddScoped<IVenueTypesService, VenueTypesService>();
 builder.Services.AddScoped<IReservationsService, ReservationsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReviewsService, ReviewsService>();
+builder.Services.AddScoped<ITablesService, TablesService>();
 
 builder.Services.AddAuthorizationCore();
 

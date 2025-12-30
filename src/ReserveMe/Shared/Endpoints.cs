@@ -21,7 +21,13 @@
 		public static string GetUserById = $"{BaseAddressApi}users/getuserbyid";
 
 		public static string UpdateWaiterVenue = $"{BaseAddressApi}users/updateWaiterVenue";
-		
+
+		#endregion
+
+		#region Users
+
+		public static string GetTablesByVenueId = $"{BaseAddressApi}tables/getTablesByVenueId";
+
 		#endregion
 
 		#region Venues
