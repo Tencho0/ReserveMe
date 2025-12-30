@@ -1,0 +1,407 @@
+﻿@page "/live"
+@namespace ReserveMe.Pages.Tables
+
+<PageTitle>Live Venue</PageTitle>
+
+<div class="container-fluid py-4">
+
+    @* Header *@
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold mb-1">Table Management</h4>
+            <p class="text-muted mb-0">View and manage tables in the restaurant</p>
+        </div>
+        <button class="btn btn-primary" @onclick="OpenAddTableDialog">
+            <i class="bi bi-plus-lg me-1"></i> Add Table
+        </button>
+    </div>
+
+    @* Statistics *@
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #424242, #616161);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count</h3>
+                    <small class="opacity-75">Total tables</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #388E3C, #4CAF50);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count(t => t.Status == TableStatus.Available && t.IsActive)</h3>
+                    <small class="opacity-75">Available</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #D32F2F, #F44336);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count(t => t.Status == TableStatus.Occupied)</h3>
+                    <small class="opacity-75">Occupied</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-sm-3">
+            <div class="card text-white" style="background: linear-gradient(135deg, #F57C00, #FF9800);">
+                <div class="card-body">
+                    <h3 class="fw-bold mb-0">@_tables.Count(t => t.Status == TableStatus.Reserved)</h3>
+                    <small class="opacity-75">Reserved</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn @(_statusFilter == null ? "btn-primary" : "btn-outline-secondary")"
+                        @onclick="() => _statusFilter = null">
+                    All
+                </button>
+                <button class="btn @(_statusFilter == TableStatus.Available ? "btn-success" : "btn-outline-success")"
+                        @onclick="() => _statusFilter = TableStatus.Available">
+                    <i class="bi bi-check-circle me-1"></i> Available
+                </button>
+                <button class="btn @(_statusFilter == TableStatus.Occupied ? "btn-danger" : "btn-outline-danger")"
+                        @onclick="() => _statusFilter = TableStatus.Occupied">
+                    <i class="bi bi-people me-1"></i> Occupied
+                </button>
+                <button class="btn @(_statusFilter == TableStatus.Reserved ? "btn-warning" : "btn-outline-warning")"
+                        @onclick="() => _statusFilter = TableStatus.Reserved">
+                    <i class="bi bi-calendar-event me-1"></i> Reserved
+                </button>
+
+                <div class="vr mx-2"></div>
+
+                <button class="btn @(_activeFilter == true ? "btn-success" : "btn-outline-secondary")"
+                        @onclick="() => _activeFilter = _activeFilter == true ? null : true">
+                    <i class="bi bi-eye me-1"></i> Active only
+                </button>
+                <button class="btn @(_activeFilter == false ? "btn-secondary" : "btn-outline-secondary")"
+                        @onclick="() => _activeFilter = _activeFilter == false ? null : false">
+                    <i class="bi bi-eye-slash me-1"></i> Inactive only
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @* Tables Grid *@
+    <div class="row g-3">
+        @foreach (var table in FilteredTables)
+        {
+            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                <div class="card table-card @GetTableCardClass(table)"
+                     @onclick="() => SelectTable(table)"
+                     style="cursor: pointer;">
+                    <div class="card-body text-center p-3">
+                        <i class="bi bi-table fs-1" style="color: @GetStatusColor(table.Status);"></i>
+                        <h6 class="mt-2 mb-1">Table #@table.TableNumber</h6>
+                        <span class="badge @GetStatusBadgeClass(table.Status)">
+                            @GetStatusText(table.Status)
+                        </span>
+                        <div class="mt-2 text-muted small">
+                            <i class="bi bi-people"></i>
+                            @if (table.Status == TableStatus.Reserved && table.GuestCount.HasValue)
+                            {
+                                @table.GuestCount.Value
+                            }
+                            else
+                            {
+                                @table.Capacity
+                            }
+                            seats
+                        </div>
+                        @if (!table.IsActive)
+                        {
+                            <span class="badge bg-secondary mt-1">Inactive</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!FilteredTables.Any())
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-table fs-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">No tables found</h5>
+                        <button class="btn btn-primary mt-3" @onclick="OpenAddTableDialog">
+                            <i class="bi bi-plus-lg me-1"></i> Add your first table
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@* Details Drawer (Offcanvas) *@
+@if (_detailsDrawerOpen && _selectedTable != null)
+{
+    <div class="offcanvas-backdrop fade show" @onclick="() => _detailsDrawerOpen = false"></div>
+    <div class="offcanvas offcanvas-end show" tabindex="-1" style="visibility: visible;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Table #@_selectedTable.TableNumber</h5>
+            <button type="button" class="btn-close" @onclick="() => _detailsDrawerOpen = false"></button>
+        </div>
+        <div class="offcanvas-body">
+            @* Table Details *@
+            <ul class="list-group list-group-flush mb-4">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="bi bi-hash me-2"></i>Number</span>
+                    <strong>@_selectedTable.TableNumber</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-circle-fill me-2" style="color: @GetStatusColor(_selectedTable.Status);"></i>Status</span>
+                    <span class="badge @GetStatusBadgeClass(_selectedTable.Status)">@GetStatusText(_selectedTable.Status)</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span><i class="bi bi-people me-2"></i>Capacity</span>
+                    <strong>@_selectedTable.Capacity seats</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-check-circle me-2"></i>Active</span>
+                    <span class="badge @(_selectedTable.IsActive ? "bg-success" : "bg-secondary")">
+                        @(_selectedTable.IsActive ? "Yes" : "No")
+                    </span>
+                </li>
+            </ul>
+
+            @* Reservation Details *@
+            @if (_selectedTable.Status == TableStatus.Reserved && _selectedTable.ActiveReservationId.HasValue)
+            {
+                <h6 class="fw-bold mb-3">Reservation details</h6>
+                <ul class="list-group list-group-flush mb-4">
+                    @if (!string.IsNullOrEmpty(_selectedTable.CustomerName))
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-person me-2"></i>Customer</span>
+                            <strong>@_selectedTable.CustomerName</strong>
+                        </li>
+                    }
+                    @if (!string.IsNullOrEmpty(_selectedTable.CustomerPhone))
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-telephone me-2"></i>Phone</span>
+                            <strong>@_selectedTable.CustomerPhone</strong>
+                        </li>
+                    }
+                    @if (_selectedTable.ReservationDate.HasValue)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-calendar me-2"></i>Date</span>
+                            <strong>@_selectedTable.ReservationDate.Value.ToString("dd.MM.yyyy")</strong>
+                        </li>
+                    }
+                    @if (_selectedTable.ReservationTime.HasValue)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-clock me-2"></i>Time</span>
+                            <strong>@_selectedTable.ReservationTime.Value.ToString(@"hh\:mm")</strong>
+                        </li>
+                    }
+                    @if (_selectedTable.GuestCount.HasValue)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><i class="bi bi-people me-2"></i>Guests</span>
+                            <strong>@_selectedTable.GuestCount.Value</strong>
+                        </li>
+                    }
+                </ul>
+            }
+
+            @* Actions *@
+            <h6 class="fw-bold mb-3">Quick actions</h6>
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" @onclick="OpenEditTableDialog">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </button>
+
+                @if (_selectedTable.Status == TableStatus.Available)
+                {
+                    <button class="btn btn-outline-warning" @onclick="OpenReserveTableDialog">
+                        <i class="bi bi-calendar-plus me-1"></i> Reserve table
+                    </button>
+                    <button class="btn btn-outline-danger" @onclick="() => ChangeTableStatus(_selectedTable, TableStatus.Occupied)">
+                        <i class="bi bi-person-fill me-1"></i> Mark as occupied
+                    </button>
+                }
+
+                @if (_selectedTable.Status == TableStatus.Occupied)
+                {
+                    <button class="btn btn-outline-success" @onclick="() => ChangeTableStatus(_selectedTable, TableStatus.Available)">
+                        <i class="bi bi-check-circle me-1"></i> Mark as available
+                    </button>
+                }
+
+                @if (_selectedTable.Status == TableStatus.Reserved)
+                {
+                    <button class="btn btn-outline-danger" @onclick="() => CancelReservation(_selectedTable)">
+                        <i class="bi bi-x-circle me-1"></i> Cancel reservation
+                    </button>
+                }
+
+                <button class="btn @(_selectedTable.IsActive ? "btn-outline-secondary" : "btn-outline-success")"
+                        @onclick="ToggleTableActive">
+                    <i class="bi @(_selectedTable.IsActive ? "bi-eye-slash" : "bi-eye") me-1"></i>
+                    @(_selectedTable.IsActive ? "Deactivate" : "Activate")
+                </button>
+
+                @if (_selectedTable.Status == TableStatus.Available)
+                {
+                    <hr />
+                    <button class="btn btn-outline-danger" @onclick="OpenDeleteConfirmation">
+                        <i class="bi bi-trash me-1"></i> Delete table
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@* Add/Edit Table Modal *@
+@if (_tableDialogOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi @(_isEditMode ? "bi-pencil" : "bi-plus-lg") me-2"></i>
+                        @(_isEditMode ? "Edit table" : "Add new table")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _tableDialogOpen = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Table number</label>
+                        <input type="number" class="form-control" @bind="_editingTable.TableNumber" min="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Capacity (seats)</label>
+                        <input type="number" class="form-control" @bind="_editingTable.Capacity" min="1" max="20" />
+                    </div>
+                    @if (_isEditMode)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" @bind="_editingTable.Status">
+                                <option value="@TableStatus.Available">Available</option>
+                                <option value="@TableStatus.Occupied">Occupied</option>
+                                <option value="@TableStatus.Reserved">Reserved</option>
+                            </select>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" @bind="_editingTable.IsActive" id="isActiveSwitch" />
+                            <label class="form-check-label" for="isActiveSwitch">Active table</label>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _tableDialogOpen = false">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveTable">
+                        @(_isEditMode ? "Save" : "Add")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Reserve Table Modal *@
+@if (_reserveDialogOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-plus me-2"></i>
+                        Reserve table #@_selectedTable?.TableNumber
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _reserveDialogOpen = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Customer name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" @bind="_reservationCustomerName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" @bind="_reservationPhoneNumber" placeholder="+359 888 123 456" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reservation date</label>
+                        <input type="date" class="form-control" @bind="_reservationDate" @bind:format="yyyy-MM-dd" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reservation time</label>
+                        <input type="time" class="form-control" value="@_reservationTimeString" @onchange="OnTimeChanged" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Number of guests</label>
+                        <input type="number" class="form-control" @bind="_reservationGuestCount" min="1" max="20" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _reserveDialogOpen = false">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmReservation">Reserve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Delete Confirmation Modal *@
+@if (_deleteDialogOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                        Confirmation
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="() => _deleteDialogOpen = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete Table #@_selectedTable?.TableNumber?</p>
+                    <p class="text-muted small">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="() => _deleteDialogOpen = false">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="DeleteTable">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .table-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .table-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+        }
+
+    .table-card-selected {
+        border: 2px solid #0d6efd !important;
+        transform: scale(1.02);
+    }
+
+    .table-card-inactive {
+        opacity: 0.6;
+    }
+
+    .offcanvas {
+        width: 400px !important;
+    }
+</style>
