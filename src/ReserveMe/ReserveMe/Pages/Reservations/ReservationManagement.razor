@@ -147,7 +147,7 @@
             }
             else
             {
-                <div class="table-responsive">
+                <div class="table-responsive overflow-visible">
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-light">
                             <tr>
@@ -214,7 +214,7 @@
                                         }
                                     </td> *@
                                     <td class="text-end">
-                                        <div class="dropdown">
+                                        <div class="dropdown action-dropdown">
                                             <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>
@@ -393,5 +393,22 @@
 
     .dropdown-item {
         font-size: 0.875rem;
+    }
+
+    .table-responsive.overflow-visible {
+        overflow: visible !important;
+    }
+
+    .action-dropdown .dropdown-menu {
+        position: absolute;
+        z-index: 1050;
+    }
+
+    .table tbody tr {
+        position: relative;
+    }
+
+    .action-dropdown {
+        position: static;
     }
 </style>
