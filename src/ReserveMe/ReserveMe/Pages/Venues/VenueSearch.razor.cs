@@ -18,8 +18,8 @@ public partial class VenueSearch : ComponentBase
 
 	// Location
 	private string _currentLocation = "Sofia, Bulgaria";
-	private double _userLatitude = 42.3915;
-	private double _userLongitude = 23.2111;
+	private double _userLatitude = 42.657242292416285;
+	private double _userLongitude = 23.35533446169091;
 	private int _selectedRadius = 5;
 
 	// Search and filters
