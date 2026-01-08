@@ -34,20 +34,20 @@ public class HistoryTests : TestContext
         Services.AddSingleton(_authHelperMock.Object);
     }
 
-    #region Initialization Tests
+	#region Initialization Tests
 
-    [Fact]
-    public void History_RendersPageHeader()
-    {
-        // Act
-        var cut = RenderComponent<History>();
+	[Fact]
+	public void History_RendersPageHeader()
+	{
+		// Act
+		var cut = RenderComponent<History>();
 
-        // Assert
-        var header = cut.Find("h1");
-        Assert.Contains("История на резервациите", header.TextContent);
-    }
+		// Assert
+		var header = cut.Find("h1");
+		Assert.Contains("Reservation History", header.TextContent);
+	}
 
-    [Fact]
+	[Fact]
     public void History_LoadsUserReservations()
     {
         // Act
@@ -75,30 +75,30 @@ public class HistoryTests : TestContext
         _authHelperMock.Verify(x => x.GetUserId(), Times.Once);
     }
 
-    #endregion
+	#endregion
 
-    #region Empty State Tests
+	#region Empty State Tests
 
-    [Fact]
-    public void History_ShowsEmptyMessage_WhenNoReservations()
-    {
-        // Arrange
-        _reservationsServiceMock
-            .Setup(x => x.GetReservationsByClientId(It.IsAny<string>()))
-            .ReturnsAsync(new List<ReservationForClientDto>());
+	[Fact]
+	public void History_ShowsEmptyMessage_WhenNoReservations()
+	{
+		// Arrange
+		_reservationsServiceMock
+			.Setup(x => x.GetReservationsByClientId(It.IsAny<string>()))
+			.ReturnsAsync(new List<ReservationForClientDto>());
 
-        // Act
-        var cut = RenderComponent<History>();
+		// Act
+		var cut = RenderComponent<History>();
 
-        // Assert
-        Assert.Contains("Няма резервации", cut.Markup);
-    }
+		// Assert
+		Assert.Contains("No reservations", cut.Markup);
+	}
 
-    #endregion
+	#endregion
 
-    #region Reservation List Tests
+	#region Reservation List Tests
 
-    [Fact]
+	[Fact]
     public void History_DisplaysReservations_WhenDataExists()
     {
         // Arrange
