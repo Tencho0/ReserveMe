@@ -2,6 +2,7 @@
 {
 	using Domain.Entities;
 	using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Infrastructure;
 
 	public interface IApplicationDbContext
 	{
@@ -21,6 +22,8 @@
 
 		DbSet<VenueReview> VenueReviews => Set<VenueReview>();
 
-		Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        DatabaseFacade Database { get; }
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 	}
 }

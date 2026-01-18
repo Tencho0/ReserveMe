@@ -58,10 +58,11 @@
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region POST
+        #region POST 
 
+        /*
 		public async Task CreateReservationAsync(ReservationDto reservationDto)
 		{
 			try
@@ -90,12 +91,32 @@
 				//this._logger.LogError(ex.Message);
 			}
 		}
+		*/
 
-		#endregion
+        public async Task CreateReservationAsync(ReservationDto reservationDto)
+        {
+            var model = new SaveReservationRequest()
+            {
+                UserId = reservationDto.UserId,
+                VenueId = reservationDto.VenueId,
+                TableNumber = reservationDto.TableNumber,
+                GuestsCount = reservationDto.GuestsCount,
+                ContactName = reservationDto.ContactName,
+                ContactPhone = reservationDto.ContactPhone,
+                ContactEmail = reservationDto.ContactEmail,
+                ReservationTime = reservationDto.ReservationTime,
+                Status = (int)reservationDto.Status
+            };
 
-		#region PUT
+            await _provider.PostAsync<SaveReservationRequest, object>(Endpoints.CreateReservation, model, null);
+        }
 
-		public async Task<bool> ChangeReservationStatus(int reservationId, ReservationStatus newStatus)
+
+        #endregion
+
+        #region PUT
+
+        public async Task<bool> ChangeReservationStatus(int reservationId, ReservationStatus newStatus)
 		{
 			try
 			{

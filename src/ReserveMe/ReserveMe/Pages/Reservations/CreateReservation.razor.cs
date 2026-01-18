@@ -52,48 +52,45 @@ public partial class CreateReservation : ComponentBase
 		await base.OnInitializedAsync();
 	}
 
-	protected async Task ReserveAsync()
-	{
-		ErrorMessage = null;
-		SuccessMessage = null;
-		SyncToDto();
-		try
-		{
-			if (!reservationCreateContext.Validate())
-			{
-				ErrorMessage = "Please fix the validation errors and try again.";
-				return;
-			}
+    protected async Task ReserveAsync()
+    {
+        ErrorMessage = null;
+        SuccessMessage = null;
 
-			var validationError = ValidateReservation();
-			if (validationError is not null)
-			{
-				ErrorMessage = validationError;
-				return;
-			}
+        SyncToDto();
 
-			reservationDto.UserId = UserId;
-			reservationDto.VenueId = VenueId;
-			//reservationDto.CreatedAt = DateTime.UtcNow;
-			reservationDto.Status = Common.Enums.ReservationStatus.Pending;
+        try
+        {
+            if (!reservationCreateContext.Validate())
+            {
+                ErrorMessage = "Please fix the validation errors and try again.";
+                return;
+            }
 
-			await _reservationsService.CreateReservationAsync(reservationDto);
+            var validationError = ValidateReservation();
+            if (validationError is not null)
+            {
+                ErrorMessage = validationError;
+                return;
+            }
 
-			SuccessMessage =
-				$"Reservation created. Guest: {reservationDto.ContactName}, " +
-				$"Guests: {reservationDto.GuestsCount}, " +
-				$"Date: {reservationDto.ReservationTime:MM/dd/yyyy HH:mm}.";
+            reservationDto.UserId = UserId;
+            reservationDto.VenueId = VenueId;
+            reservationDto.Status = Common.Enums.ReservationStatus.Pending;
 
-			//TODO: Redirect to myreservations
-			ResetReservationForm();
-		}
-		catch (Exception ex)
-		{
-			ErrorMessage = ex.Message;
-		}
-	}
+            await _reservationsService.CreateReservationAsync(reservationDto);
 
-	protected void ToggleFav() => IsFavorite = !IsFavorite;
+            SuccessMessage = "Reservation created successfully!";
+            ResetReservationForm();
+        }
+        catch (Exception ex)
+        {
+           ErrorMessage = ex.Message;
+        }
+    }
+
+
+    protected void ToggleFav() => IsFavorite = !IsFavorite;
 
 	private string? ValidateReservation()
 	{
