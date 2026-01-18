@@ -21,7 +21,7 @@
 		public string? LogoUrl { get; set; }
 
 		public string? ImageUrl { get; set; }
-
+		 
 		public DateTime? CreatedAt { get; set; }
 
 		// Navigation properties

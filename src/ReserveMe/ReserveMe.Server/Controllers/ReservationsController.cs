@@ -6,10 +6,12 @@
 	using Microsoft.AspNetCore.Authorization;
 	using Microsoft.AspNetCore.Mvc;
 	using Shared.Dtos.Reservations;
-	using Shared.Requests.Reservations;
+    using Shared.Exceptions;
+    using Shared.Requests.Reservations;
 	using Shared.Requests.Venues;
+    using System.ComponentModel.DataAnnotations;
 
-	// only authenticated users can access this now
+    // only authenticated users can access this now
 	[Authorize]
 	//[Authorize(Roles = "SuperAdmin")]
 	public class ReservationsController : ApiControllerBase
@@ -29,10 +31,10 @@
 			return await Mediator.Send(new GetReservationsByClientIdQuery(userId));
 		}
 
-		#endregion
+        #endregion
 
-		#region CREATE
-
+        #region CREATE
+        /*
 		[HttpPost("create")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesDefaultResponseType]
@@ -43,12 +45,34 @@
 
 			return NoContent();
 		}
+		*/
 
-		#endregion
+        [HttpPost("create")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateReservation(SaveReservationRequest reservation)
+        {
+            try
+            {
+                await Mediator.Send(new CreateReservationCommand(reservation));
+                return NoContent();
+            }
+            catch (ReservationCapacityExceededException ex)
+            {
+                return Conflict(new { message = ex.Message, availableSeats = ex.AvailableSeats });
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        #endregion
 
-		#region UPDATE
+        #region UPDATE
 
-		[HttpPut("updateStaus")]
+        [HttpPut("updateStaus")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesDefaultResponseType]
 		public async Task<IActionResult> PutMenuItem(UpdateReservationStatusRequest request)

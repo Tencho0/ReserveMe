@@ -229,11 +229,14 @@
 			return uriBuilder.ToString();
 		}
 
-		/// <summary>
-		/// Handle Response Success or Failiure
-		/// </summary>
-		/// <param name="response">Response to handle</param>
-		/// <returns></returns>
+        /// <summary>
+        /// Handle Response Success or Failiure
+        /// </summary>
+        /// <param name="response">Response to handle</param>
+        /// <returns></returns>
+        /// 
+
+        /*
 		private async Task HandleResponse(HttpResponseMessage response)
 		{
 			if (!response.IsSuccessStatusCode)
@@ -279,5 +282,72 @@
 				throw new ApiRequestException(response.StatusCode, response.ReasonPhrase);
 			}
 		}
-	}
+		*/
+        private async Task HandleResponse(HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                if (response.StatusCode == HttpStatusCode.Forbidden ||
+                    response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new ServiceAuthenticationException();
+                }
+
+                if (response.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    var validationTemplate = new
+                    {
+                        failures = new Dictionary<string, string[]>()
+                    };
+
+                    var validationData = JsonConvert.DeserializeAnonymousType(
+                        content,
+                        validationTemplate,
+                        serializerSettings);
+
+                    throw new ApiValidationException(validationData?.failures);
+                }
+
+                if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    var conflictTemplate = new
+                    {
+                        message = string.Empty,
+                        availableSeats = (int?)null
+                    };
+
+                    var conflictData = JsonConvert.DeserializeAnonymousType(
+                        content,
+                        conflictTemplate,
+                        serializerSettings);
+
+                    var msg = conflictData?.message;
+                    if (string.IsNullOrWhiteSpace(msg))
+                        msg = response.ReasonPhrase;
+
+                    throw new ApiRequestException(response.StatusCode, msg);
+                }
+
+                if (response.StatusCode == HttpStatusCode.InternalServerError)
+                {
+                    var errorTemplate = new
+                    {
+                        title = string.Empty
+                    };
+
+                    var errorData = JsonConvert.DeserializeAnonymousType(
+                        content,
+                        errorTemplate,
+                        serializerSettings);
+
+                    throw new ApiRequestException(response.StatusCode, errorData?.title);
+                }
+
+                throw new ApiRequestException(response.StatusCode, response.ReasonPhrase);
+            }
+        }
+
+    }
 }
