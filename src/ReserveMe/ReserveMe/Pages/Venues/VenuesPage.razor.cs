@@ -159,5 +159,13 @@
 		{
 			isDeleteModalVisible = false;
 		}
-	}
+
+        private void UpdateCoordinates(double lat, double lng)
+        {
+            venueDto.Latitude = lat;
+            venueDto.Longitude = lng;
+
+            StateHasChanged();
+        }
+    }
 }
