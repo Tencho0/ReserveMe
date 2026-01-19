@@ -94,12 +94,23 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+/*
 
 app.UseStaticFiles(new StaticFileOptions
 {
 	FileProvider = new PhysicalFileProvider(
 		Path.Combine(app.Environment.ContentRootPath, "StaticFiles")),
 	RequestPath = "/StaticFiles"
+});
+*/
+
+var staticFilesPath = Path.Combine(app.Environment.ContentRootPath, "StaticFiles");
+Directory.CreateDirectory(staticFilesPath);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(staticFilesPath),
+    RequestPath = "/StaticFiles"
 });
 
 using (var scope = app.Services.CreateScope())

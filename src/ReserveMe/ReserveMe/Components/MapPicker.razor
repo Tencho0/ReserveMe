@@ -1,0 +1,47 @@
+﻿@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
+
+<div id="@MapContainerId" style="width: 100%; height: 100%;"></div>
+
+@code {
+    [Parameter] public double Lat { get; set; }
+    [Parameter] public double Lng { get; set; }
+    [Parameter] public EventCallback<(double lat, double lng)> OnClick { get; set; }
+
+    private string MapContainerId = $"map-picker-{Guid.NewGuid()}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            string apiKey = Configuration["GoogleMaps:ApiKey"];
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                Console.WriteLine("Error: Google Maps API key not found in appsettings.json");
+                return;
+            }
+
+            var dotNetRef = DotNetObjectReference.Create(this);
+
+            await JSRuntime.InvokeVoidAsync(
+                "mapPicker.init",
+                MapContainerId,
+                apiKey,
+                Lat,
+                Lng,
+                dotNetRef
+            );
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnMapClick(double lat, double lng)
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync((lat, lng));
+        }
+    }
+}

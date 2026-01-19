@@ -9,6 +9,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="bunit" Version="1.28.9" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.10" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
 		<PackageReference Include="Moq" Version="4.20.70" />
 		<PackageReference Include="xunit" Version="2.7.0" />
@@ -24,6 +27,8 @@
 
 	<ItemGroup>
 		<!-- Reference to the main ReserveMe project -->
+		<ProjectReference Include="..\Application\Application.csproj" />
+		<ProjectReference Include="..\Domain\Domain.csproj" />
 		<ProjectReference Include="..\ReserveMe\ReserveMe.csproj" />
 	</ItemGroup>
 

@@ -203,22 +203,28 @@
                                     <ValidationMessage For="@(() => venueDto.VenueTypeId)" class="text-danger" />
                                 </div>
 
-                                <div class="col-xl-6">
-                                    <label class="form-label" for="venue-lat">Latitude</label>
-                                    <InputNumber id="venue-lat"
-                                                 class="form-control"
-                                                 placeholder="e.g. 42.6977"
-                                                 @bind-Value="venueDto.Latitude" />
-                                    <ValidationMessage For="@(() => venueDto.Latitude)" class="text-danger" />
-                                </div>
+                                <div class="col-xl-12">
+                                    <label class="form-label fw-bold">Venue Location (Click to Pick)</label>
 
-                                <div class="col-xl-6">
-                                    <label class="form-label" for="venue-lng">Longitude</label>
-                                    <InputNumber id="venue-lng"
-                                                 class="form-control"
-                                                 placeholder="e.g. 23.3219"
-                                                 @bind-Value="venueDto.Longitude" />
-                                    <ValidationMessage For="@(() => venueDto.Longitude)" class="text-danger" />
+                                    <div style="height: 350px; width: 100%; border: 1px solid #ced4da; border-radius: 0.375rem; overflow: hidden; margin-bottom: 0.5rem;">
+        
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                            <ReserveMe.Components.MapPicker 
+                                                Lat="@venueDto.Latitude" 
+                                                Lng="@venueDto.Longitude" 
+                                                OnClick="@((coords) => UpdateCoordinates(coords.lat, coords.lng))" 
+                                                />
+                                        </div>
+
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded border">
+                                        <span class="text-muted small">Selected Latitude: <strong>@venueDto.Latitude</strong></span>
+                                        <span class="text-muted small">Selected Longitude: <strong>@venueDto.Longitude</strong></span>
+                                    </div>
+
+                                    <InputNumber @bind-Value="venueDto.Latitude" hidden />
+                                    <InputNumber @bind-Value="venueDto.Longitude" hidden />
                                 </div>
                             </div>
                         </div>
