@@ -3,21 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReserveMe.Server", "ReserveMe.Server\ReserveMe.Server.csproj", "{6612EC78-5222-4FC1-8497-99D92431FBE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReserveMe.Server", "ReserveMe.Server\ReserveMe.Server.csproj", "{6612EC78-5222-4FC1-8497-99D92431FBE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{B22BA437-81F1-46FA-AC75-0F13BB7635D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{B22BA437-81F1-46FA-AC75-0F13BB7635D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{5B42AAF0-2EA8-4C48-BA13-F5D8BA17391A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{5B42AAF0-2EA8-4C48-BA13-F5D8BA17391A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{31451981-A557-4279-853C-16C72414821D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{31451981-A557-4279-853C-16C72414821D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReserveMe", "ReserveMe\ReserveMe.csproj", "{7F9DA400-D0B0-467A-9DF7-474AF331D0FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReserveMe", "ReserveMe\ReserveMe.csproj", "{7F9DA400-D0B0-467A-9DF7-474AF331D0FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{ACCDB6AE-BBC3-4591-B1C1-64595F7C487F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{ACCDB6AE-BBC3-4591-B1C1-64595F7C487F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{5E93750D-62B7-4AD8-A1D4-63FA63C53F74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{5E93750D-62B7-4AD8-A1D4-63FA63C53F74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReserveMe.Tests", "ReserveMe.Tests\ReserveMe.Tests.csproj", "{C8671D1B-544A-F1A8-06E8-6A769058DD09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReserveMe.Tests", "ReserveMe.Tests\ReserveMe.Tests.csproj", "{C8671D1B-544A-F1A8-06E8-6A769058DD09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
