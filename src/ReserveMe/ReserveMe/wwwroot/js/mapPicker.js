@@ -1,87 +1,112 @@
 ﻿window.mapPicker = (function () {
-    let mapInstance = null;
-    let markerInstance = null;
-
-    function waitForGoogleMaps() {
-        return new Promise((resolve, reject) => {
-            if (window.google && window.google.maps) {
-                resolve();
-                return;
-            }
-            let attempts = 0;
-            const interval = setInterval(() => {
-                attempts++;
-                if (window.google && window.google.maps) {
-                    clearInterval(interval);
-                    resolve();
-                } else if (attempts > 50) { 
-                    clearInterval(interval);
-                    reject("Google Maps failed to load.");
-                }
-            }, 100);
-        });
-    }
-
-    function loadGoogleMaps(apiKey) {
-        if (window.google && window.google.maps) return Promise.resolve();
-
-        const existingScript = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
-        if (existingScript) {
-            return waitForGoogleMaps();
-        }
-
-        return new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=quarterly&loading=async`;
-            script.async = true;
-            script.defer = true;
-            script.onload = () => resolve();
-            script.onerror = (err) => reject(err);
-            document.head.appendChild(script);
-        });
-    }
 
     async function init(elementId, apiKey, lat, lng, dotNetHelper) {
+        const el = document.getElementById(elementId);
+        if (!el) {
+            console.error("[mapPicker] Element not found:", elementId);
+            return;
+        }
+
+        // Default to Sofia
+        const center = {
+            lat: (lat === 0 && lng === 0) ? 42.6977 : lat,
+            lng: (lat === 0 && lng === 0) ? 23.3219 : lng
+        };
+
+        let map = null;
+        let marker = null;
+
         try {
-            await loadGoogleMaps(apiKey);
+            console.log("[mapPicker] Attempting modern load...");
+            await window.mapLoader.loadModern(apiKey);
 
-            const safeLat = (lat === 0 && lng === 0) ? 42.6977 : lat;
-            const safeLng = (lat === 0 && lng === 0) ? 23.3219 : lng;
-            const defaultLocation = { lat: safeLat, lng: safeLng };
+            if (!window.google || !window.google.maps) {
+                throw new Error("Maps API not ready after load");
+            }
 
-            const mapElement = document.getElementById(elementId);
-            if (!mapElement) return;
+            if (google.maps.importLibrary) {
+                const { Map } = await google.maps.importLibrary("maps");
+                map = new Map(el, {
+                    center,
+                    zoom: 15,
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    fullscreenControl: false
+                });
 
-            mapInstance = new google.maps.Map(mapElement, {
-                center: defaultLocation,
-                zoom: 15,
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false
+                console.log("[mapPicker] Map created (modern)");
+
+                marker = new google.maps.Marker({
+                    position: center,
+                    map: map,
+                    draggable: true,
+                    title: "Drag me to set location"
+                });
+
+                console.log("[mapPicker] Standard marker created");
+            } else {
+                throw new Error("importLibrary not available");
+            }
+
+        } catch (modernError) {
+            console.warn("[mapPicker] Modern load failed, trying legacy:", modernError);
+
+            try {
+                await window.mapLoader.loadLegacy(apiKey);
+
+                map = new google.maps.Map(el, {
+                    center,
+                    zoom: 15,
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    fullscreenControl: false
+                });
+
+                marker = new google.maps.Marker({
+                    position: center,
+                    map: map,
+                    draggable: true,
+                    title: "Drag me to set location"
+                });
+
+                console.log("[mapPicker] Map and marker created (legacy)");
+
+            } catch (legacyError) {
+                console.error("[mapPicker] Both modern and legacy loads failed:", legacyError);
+                el.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Failed to load map. Please refresh the page.</div>';
+                return;
+            }
+        }
+
+        if (map && marker) {
+            try {
+                const observer = new ResizeObserver(() => {
+                    if (google && google.maps && google.maps.event) {
+                        google.maps.event.trigger(map, "resize");
+                        map.setCenter(center);
+                    }
+                });
+                observer.observe(el);
+            } catch (e) {
+                console.warn("[mapPicker] ResizeObserver not available");
+            }
+
+            map.addListener("click", (e) => {
+                const cLat = e.latLng.lat();
+                const cLng = e.latLng.lng();
+
+                marker.setPosition({ lat: cLat, lng: cLng });
+
+                dotNetHelper.invokeMethodAsync("OnMapClick", cLat, cLng);
             });
 
-            markerInstance = new google.maps.Marker({
-                position: defaultLocation,
-                map: mapInstance,
-                draggable: true,
-                title: "Drag to select location"
+            marker.addListener("dragend", (e) => {
+                const dLat = e.latLng.lat();
+                const dLng = e.latLng.lng();
+                dotNetHelper.invokeMethodAsync("OnMapClick", dLat, dLng);
             });
 
-            mapInstance.addListener("click", (e) => {
-                const clickedLat = e.latLng.lat();
-                const clickedLng = e.latLng.lng();
-                markerInstance.setPosition({ lat: clickedLat, lng: clickedLng });
-                dotNetHelper.invokeMethodAsync("OnMapClick", clickedLat, clickedLng);
-            });
-
-            markerInstance.addListener("dragend", (e) => {
-                const draggedLat = e.latLng.lat();
-                const draggedLng = e.latLng.lng();
-                dotNetHelper.invokeMethodAsync("OnMapClick", draggedLat, draggedLng);
-            });
-
-        } catch (error) {
-            console.error("[mapPicker] Initialization failed:", error);
+            console.log("[mapPicker] Map picker initialized successfully");
         }
     }
 

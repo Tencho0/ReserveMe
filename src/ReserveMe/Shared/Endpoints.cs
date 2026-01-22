@@ -2,7 +2,7 @@
 {
 	public class Endpoints
 	{
-        public static readonly string BaseAddress = "https://localhost:44349/";
+		public static readonly string BaseAddress = "https://localhost:44349/";
 
         public static readonly string BaseAddressApi = $"{BaseAddress}api/";
 
