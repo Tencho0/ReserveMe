@@ -1,6 +1,7 @@
 ﻿@using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 @inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div id="@MapContainerId" style="width: 100%; height: 100%;"></div>
 
@@ -10,29 +11,37 @@
     [Parameter] public EventCallback<(double lat, double lng)> OnClick { get; set; }
 
     private string MapContainerId = $"map-picker-{Guid.NewGuid()}";
+    private DotNetObjectReference<MapPicker>? dotNetRef;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            string apiKey = Configuration["GoogleMaps:ApiKey"];
+            string? apiKey = Configuration["GoogleMaps:ApiKey"];
 
             if (string.IsNullOrEmpty(apiKey))
             {
-                Console.WriteLine("Error: Google Maps API key not found in appsettings.json");
+                Console.WriteLine("[MapPicker] Error: Google Maps API key not found in appsettings.json");
                 return;
             }
 
-            var dotNetRef = DotNetObjectReference.Create(this);
+            try
+            {
+                dotNetRef = DotNetObjectReference.Create(this);
 
-            await JSRuntime.InvokeVoidAsync(
-                "mapPicker.init",
-                MapContainerId,
-                apiKey,
-                Lat,
-                Lng,
-                dotNetRef
-            );
+                await JSRuntime.InvokeVoidAsync(
+                    "mapPicker.init",
+                    MapContainerId,
+                    apiKey,
+                    Lat,
+                    Lng,
+                    dotNetRef
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MapPicker] Error initializing map: {ex.Message}");
+            }
         }
     }
 
@@ -43,5 +52,11 @@
         {
             await OnClick.InvokeAsync((lat, lng));
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        dotNetRef?.Dispose();
+        await Task.CompletedTask;
     }
 }
