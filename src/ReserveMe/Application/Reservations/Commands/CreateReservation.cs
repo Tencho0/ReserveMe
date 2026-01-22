@@ -10,6 +10,7 @@ namespace Application.Reservations.Commands
     using Shared.Exceptions;
     using Microsoft.EntityFrameworkCore;
     using System.Data;
+    using Microsoft.AspNetCore.Identity;
 
     public record CreateReservationCommand(SaveReservationRequest Data) : IRequest;
 
@@ -17,12 +18,14 @@ namespace Application.Reservations.Commands
 		: IRequestHandler<CreateReservationCommand>
 	{
 		private readonly IApplicationDbContext _context;
+		private readonly UserManager<ApplicationUser> _userManager;
 
         private const int ReservationDurationMinutes = 120;
 
-        public CreateReservationCommandHandler(IApplicationDbContext context)
+        public CreateReservationCommandHandler(IApplicationDbContext context, UserManager<ApplicationUser> userManager)
 		{
 			_context = context;
+			_userManager = userManager;
 		}
         /*
 		async Task IRequestHandler<CreateReservationCommand>.Handle(CreateReservationCommand request, CancellationToken cancellationToken)
@@ -48,6 +51,22 @@ namespace Application.Reservations.Commands
         public async Task Handle(CreateReservationCommand request, CancellationToken cancellationToken)
         {
             var data = request.Data;
+
+            if (!string.IsNullOrEmpty(data.UserId))
+            {
+                var user = await _userManager.FindByIdAsync(data.UserId);
+                if (user != null)
+                {
+                    if (string.IsNullOrEmpty(data.ContactName))
+                        data.ContactName = $"{user.FirstName} {user.LastName}".Trim();
+
+                    if (string.IsNullOrEmpty(data.ContactPhone))
+                        data.ContactPhone = user.PhoneNumber;
+
+                    if (string.IsNullOrEmpty(data.ContactEmail))
+                        data.ContactEmail = user.Email;
+                }
+            }
 
             if (data.ReservationTime is null)
                 throw new ValidationException("ReservationTime is required.");
