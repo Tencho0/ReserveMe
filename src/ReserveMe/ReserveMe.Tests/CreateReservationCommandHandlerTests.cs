@@ -7,9 +7,17 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Exceptions;
 using Shared.Requests.Reservations;
 using Xunit;
+using Moq;
+using Microsoft.AspNetCore.Identity;
 
 public class CreateReservationCommandHandlerTests
 {
+    private UserManager<ApplicationUser> CreateUserManagerMock()
+    {
+        var store = new Mock<IUserStore<ApplicationUser>>();
+        return new UserManager<ApplicationUser>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+    }
+
     private static TestApplicationDbContext CreateDb()
     {
         var connection = new Microsoft.Data.Sqlite.SqliteConnection("DataSource=:memory:");
@@ -46,7 +54,7 @@ public class CreateReservationCommandHandlerTests
 
         await db.SaveChangesAsync(default);
 
-        var handler = new CreateReservationCommandHandler(db);
+        var handler = new CreateReservationCommandHandler(db, CreateUserManagerMock());
 
         var req = new SaveReservationRequest
         {
@@ -82,7 +90,7 @@ public class CreateReservationCommandHandlerTests
 
         await db.SaveChangesAsync(default);
 
-        var handler = new CreateReservationCommandHandler(db);
+        var handler = new CreateReservationCommandHandler(db, CreateUserManagerMock());
 
         var req = new SaveReservationRequest
         {
@@ -125,7 +133,7 @@ public class CreateReservationCommandHandlerTests
 
         await db.SaveChangesAsync(default);
 
-        var handler = new CreateReservationCommandHandler(db);
+        var handler = new CreateReservationCommandHandler(db, CreateUserManagerMock());
 
         var req = new SaveReservationRequest
         {
@@ -141,5 +149,49 @@ public class CreateReservationCommandHandlerTests
 
         var count = await db.Reservations.CountAsync(r => r.VenueId == 2);
         Assert.Equal(3, count);
+    }
+
+    [Fact]
+    public async Task Fills_contact_data_from_user_profile_if_not_provided()
+    {
+        await using var db = CreateDb();
+
+        var userId = "user-123";
+        var user = new ApplicationUser
+        {
+            Id = userId,
+            FirstName = "Ivan",
+            LastName = "Ivanov",
+            Email = "ivan@test.com",
+            PhoneNumber = "123456"
+        };
+
+        var store = new Mock<IUserStore<ApplicationUser>>();
+        var userManagerMock = new Mock<UserManager<ApplicationUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        userManagerMock.Setup(m => m.FindByIdAsync(userId)).ReturnsAsync(user);
+
+        db.Venues.Add(new Venue { Id = 3, IsActive = true, IsDeleted = false, Name = "V3" });
+        db.Tables.Add(new Table { VenueId = 3, TableNumber = 1, Capacity = 10, IsActive = true });
+        await db.SaveChangesAsync();
+
+        var handler = new CreateReservationCommandHandler(db, userManagerMock.Object);
+
+        var req = new SaveReservationRequest
+        {
+            UserId = userId,
+            VenueId = 3,
+            TableNumber = 1,
+            GuestsCount = 2,
+            ReservationTime = DateTime.Now.AddDays(1),
+            Status = (int)ReservationStatus.Pending
+            // Contact fields are null
+        };
+
+        await handler.Handle(new CreateReservationCommand(req), default);
+
+        var reservation = await db.Reservations.FirstAsync(r => r.UserId == userId);
+        Assert.Equal("Ivan Ivanov", reservation.ContactName);
+        Assert.Equal("ivan@test.com", reservation.ContactEmail);
+        Assert.Equal("123456", reservation.ContactPhone);
     }
 }

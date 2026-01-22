@@ -4,8 +4,9 @@
 	using Domain.Entities;
 	using MediatR;
 	using Shared.Requests.Venues;
+    using Microsoft.EntityFrameworkCore;
 
-	public record CreateVenueCommand(SaveVenueRequest Data) : IRequest;
+	public record CreateVenueCommand(SaveVenueRequest Data, string? UserId = null) : IRequest;
 
 	public class CreateVenueCommandHandler
 		: IRequestHandler<CreateVenueCommand>
@@ -17,7 +18,7 @@
 			_context = context;
 		}
 
-		async Task IRequestHandler<CreateVenueCommand>.Handle(CreateVenueCommand request, CancellationToken cancellationToken)
+		public async Task Handle(CreateVenueCommand request, CancellationToken cancellationToken)
 		{
 			var entity = new Venue()
 			{
@@ -33,6 +34,16 @@
 
 			await _context.Venues.AddAsync(entity);
 			await _context.SaveChangesAsync(cancellationToken);
+
+            if (!string.IsNullOrEmpty(request.UserId))
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == request.UserId, cancellationToken);
+                if (user != null)
+                {
+                    user.VenueId = entity.Id;
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
 		}
 	}
 }

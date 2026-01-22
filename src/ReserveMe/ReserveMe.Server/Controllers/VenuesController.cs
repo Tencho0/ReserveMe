@@ -6,6 +6,7 @@
 	using Microsoft.AspNetCore.Mvc;
 	using Shared.Dtos.Venues;
 	using Shared.Requests.Venues;
+    using System.Security.Claims;
 
 	[Authorize]
 	public class VenuesController : ApiControllerBase
@@ -47,7 +48,8 @@
 		[ProducesDefaultResponseType]
 		public async Task<IActionResult> CreateVenue(SaveVenueRequest venue)
 		{
-			await Mediator.Send(new CreateVenueCommand(venue));
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			await Mediator.Send(new CreateVenueCommand(venue, userId));
 
 			return NoContent();
 		}

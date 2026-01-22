@@ -14,6 +14,12 @@
 			return await Mediator.Send(new GetTablesQuery(venueId));
 		}
 
+		[HttpGet("getAvailableTables")]
+		public async Task<ActionResult<List<TableDto>>> GetAvailableTables(int venueId, DateTime reservationTime, int guestsCount)
+		{
+			return await Mediator.Send(new GetAvailableTablesQuery(venueId, reservationTime, guestsCount));
+		}
+
 		#endregion
 	}
 }

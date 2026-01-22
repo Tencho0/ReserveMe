@@ -8,6 +8,7 @@
 	using Shared.Dtos.Reviews;
 	using Shared.Dtos.Users;
 	using Shared.Dtos.Venues;
+    using UserRoles = global::Common.UserRoles;
 
 	public record GetVenueDetailsByVenueIdQuery(int VenueId) : IRequest<VenueDetailsDto>;
 
@@ -27,24 +28,28 @@
 			GetVenueDetailsByVenueIdQuery request,
 			CancellationToken cancellationToken)
 		{
-			var ownersInRole = await _userManager.GetUsersInRoleAsync("Owner");
+			var ownersInRole = await _userManager.GetUsersInRoleAsync(UserRoles.OWNER_ROLE);
 			var ownerIds = new HashSet<string>(ownersInRole.Select(u => u.Id));
 
-			var waitersInRole = await _userManager.GetUsersInRoleAsync("Waiter");
+			var waitersInRole = await _userManager.GetUsersInRoleAsync(UserRoles.WAITER_ROLE);
 			var waiterIds = new HashSet<string>(waitersInRole.Select(u => u.Id));
 
 			var venue = await _context.Venues
 				.Include(v => v.VenueReviews)
 				.ThenInclude(vr => vr.User)
 				.Include(v => v.VenueType)
-				.Include(v => v.Users)
 				.AsNoTracking()
-				.FirstOrDefaultAsync(v => v.Id == request.VenueId);
+				.FirstOrDefaultAsync(v => v.Id == request.VenueId, cancellationToken);
 
-			if (venue == null) return new VenueDetailsDto(); // Throw and handle not found exception
+			if (venue == null) return new VenueDetailsDto(); 
 
-			var owners = venue.Users
-				   .Where(u => u.VenueId == request.VenueId && ownerIds.Contains(u.Id))
+            var venueUsers = await _context.Users
+                .Where(u => u.VenueId == request.VenueId)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+			var owners = venueUsers
+				   .Where(u => ownerIds.Contains(u.Id))
 				   .Select(u => new UserDto
 				   {
 					   Id = u.Id,
@@ -58,8 +63,8 @@
 				   })
 				   .ToList();
 
-			var waiters = venue.Users
-				   .Where(u => u.VenueId == request.VenueId && waiterIds.Contains(u.Id))
+			var waiters = venueUsers
+				   .Where(u => waiterIds.Contains(u.Id))
 				   .Select(u => new UserDto
 				   {
 					   Id = u.Id,
