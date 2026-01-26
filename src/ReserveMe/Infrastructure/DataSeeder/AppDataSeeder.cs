@@ -43,6 +43,41 @@
 
 			// 3. Seed Venues with VenueTypes
 			var venues = await SeedVenuesAsync(cancellationToken);
+
+			// 4. Seed Tables for Venues
+			await SeedTablesAsync(venues, cancellationToken);
+		}
+
+		private async Task SeedTablesAsync(List<Venue> venues, CancellationToken cancellationToken)
+		{
+			try
+			{
+				if (await _context.Tables.AnyAsync(cancellationToken))
+				{
+					return;
+				}
+
+				var tables = new List<Table>();
+				foreach (var venue in venues)
+				{
+					for (int i = 1; i <= 10; i++)
+					{
+						tables.Add(new Table
+						{
+							VenueId = venue.Id,
+							TableNumber = i,
+							Capacity = i % 2 == 0 ? 4 : 2,
+							IsActive = true
+						});
+					}
+				}
+
+				_context.Tables.AddRange(tables);
+				await _context.SaveChangesAsync(cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			}
 		}
 
 		private async Task<List<Venue>> SeedVenuesAsync(CancellationToken cancellationToken)
